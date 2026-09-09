@@ -3,153 +3,1321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LINEスタンプ ワードStudio (CSV版)</title>
+    <title>LINE Stamp Word Planner & 9:16 Canvas (CSV Sync)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Noto Sans JP & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        line: {
+                            green: '#06C755',
+                            hover: '#05b34c',
+                            light: '#e8f8ef',
+                            dark: '#003314',
+                            bg: '#f4f5f7'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans JP"', 'Inter', 'sans-serif'],
+                    },
+                    aspectRatio: {
+                        '9/16': '9 / 16',
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        :root { --line-green: #06C755; --bg-color: #f5f6f6; --text-color: #333; }
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; height: 100vh; }
-        header { background-color: #fff; padding: 15px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-        h1 { margin: 0; font-size: 1.2rem; color: var(--line-green); }
-        .main-container { display: flex; flex: 1; overflow: hidden; flex-direction: column; }
-        @media (min-width: 768px) { .main-container { flex-direction: row; } }
-        
-        /* 9:16 Preview Area */
-        .preview-area { flex: 1; background-color: #e5e5e5; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .canvas-9-16 { width: 100%; max-width: 360px; aspect-ratio: 9/16; background-image: url('https://placehold.co/720x1280/cccccc/ffffff?text=Background+Image'); background-size: cover; background-position: center; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); position: relative; display: flex; align-items: center; justify-content: center; }
-        .stamp-text-preview { font-size: 2rem; font-weight: bold; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.8), -2px -2px 4px rgba(0,0,0,0.8); text-align: center; padding: 10px; word-break: break-word; }
-        
-        /* List & Comment Area */
-        .panel-area { width: 100%; max-width: 100%; background: #fff; display: flex; flex-direction: column; border-left: 1px solid #ddd; }
-        @media (min-width: 768px) { .panel-area { max-width: 400px; } }
-        
-        .input-group { padding: 15px; border-bottom: 1px solid #eee; display: flex; gap: 10px; }
-        input[type="text"] { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 20px; outline: none; font-size: 1rem; }
-        button { background-color: var(--line-green); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
-        button:hover { opacity: 0.8; }
-        
-        .list-area { flex: 1; overflow-y: auto; padding: 15px; }
-        .word-card { background: #f9f9f9; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; transition: 0.2s; }
-        .word-card:hover { background: #f0f0f0; }
-        .word-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: #777; margin-bottom: 5px; }
-        .word-text { font-size: 1.1rem; font-weight: bold; }
-        
-        .comments { margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px; }
-        .comment-item { font-size: 0.9rem; margin-bottom: 5px; background: #e9ecef; padding: 8px; border-radius: 6px; }
+        body {
+            font-family: 'Noto Sans JP', 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Custom Scrollbar for list panels */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Text stroke effect for stamp overlay text */
+        .text-stroke-sm {
+            -webkit-text-stroke: 3px #ffffff;
+            paint-order: stroke fill;
+        }
+        .text-stroke-black {
+            -webkit-text-stroke: 3px #000000;
+            paint-order: stroke fill;
+        }
+
+        /* Stamp speech bubble presets */
+        .bubble-tail-bottom::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px 8px 0 8px;
+            border-style: solid;
+            border-color: currentColor transparent transparent transparent;
+        }
+
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        .animate-bounce-subtle {
+            animation: bounce-subtle 2s infinite ease-in-out;
+        }
+
+        @keyframes heart-pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        .animate-pop {
+            animation: heart-pop 0.3s ease-out;
+        }
     </style>
 </head>
-<body>
-    <header>
-        <h1>LINEスタンプ ワードStudio (CSV版)</h1>
-        <div><input type="text" id="username" placeholder="あなたの名前" value="ユーザー1" style="width: 100px;"></div>
+<body class="min-h-screen flex flex-col bg-slate-100 antialiased selection:bg-line-green selection:text-white">
+
+    <!-- Top Main Header & Navigation -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand Title & Connection Status -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-line-green text-white flex items-center justify-center font-bold text-xl shadow-md shadow-line-green/30">
+                        <i class="fa-solid fa-file-csv"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-base sm:text-lg font-extrabold text-slate-800 leading-tight flex items-center gap-2">
+                            <span>スタンプ台詞案 Studio</span>
+                            <span id="syncStatusBadge" class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold border border-amber-300 flex items-center gap-1">
+                                <span id="syncDot" class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                <span id="syncStatusText">CSV接続確認中...</span>
+                            </span>
+                        </h1>
+                        <p class="text-xs text-slate-500 hidden sm:block">ローカル CSV 連携 ・ リアルタイム 9:16 キャンバス</p>
+                    </div>
+                </div>
+
+                <!-- Right Navigation Tabs & User Profile Name -->
+                <div class="flex items-center gap-2">
+                    <!-- User Profile Quick Editor -->
+                    <button onclick="openUserNameModal()" class="hidden sm:flex items-center gap-2 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 transition-colors border border-slate-200">
+                        <i class="fa-solid fa-user-gear text-line-green"></i>
+                        <span id="headerUserName">ユーザー</span>
+                    </button>
+
+                    <!-- Desktop Navigation Tabs -->
+                    <nav class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                        <button onclick="switchTab('home')" id="tabBtn-home" class="nav-tab flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 bg-white text-line-green shadow-sm">
+                            <i class="fa-solid fa-house"></i>
+                            <span data-i18n="tabHome">ホーム</span>
+                        </button>
+                        <button onclick="switchTab('comments')" id="tabBtn-comments" class="nav-tab flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-200 relative">
+                            <i class="fa-solid fa-comments"></i>
+                            <span data-i18n="tabComments">コメント・提案</span>
+                            <span id="commentBadge" class="bg-red-500 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">0</span>
+                        </button>
+                        <button onclick="switchTab('info')" id="tabBtn-info" class="nav-tab flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-200">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span data-i18n="tabInfo">情報</span>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </div>
     </header>
 
-    <div class="main-container">
-        <!-- プレビューエリア -->
-        <div class="preview-area">
-            <div class="canvas-9-16">
-                <div class="stamp-text-preview" id="previewText">ワードを選択してください</div>
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6">
+
+        <!-- Offline Server Warning Alert -->
+        <div id="serverOfflineAlert" class="hidden mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-xl shadow-sm">
+            <div class="flex items-start gap-3">
+                <i class="fa-solid fa-triangle-exclamation text-red-500 text-xl mt-0.5"></i>
+                <div class="text-xs text-red-800">
+                    <p class="font-bold text-sm">Python Flask サーバー (`app.py`) に接続できません</p>
+                    <p class="mt-1">ローカルフォルダで <code class="bg-red-100 px-1.5 py-0.5 rounded font-mono">python app.py</code> を実行し、サーバーが起動しているか確認してください。</p>
+                </div>
             </div>
         </div>
 
-        <!-- リスト＆コメントエリア -->
-        <div class="panel-area">
-            <div class="input-group">
-                <input type="text" id="wordInput" placeholder="スタンプのフレーズを提案...">
-                <button onclick="addWord()">追加</button>
+        <!-- ================= HOME TAB (Main Stamp Planner & 9:16 Canvas) ================= -->
+        <section id="tab-home" class="tab-content transition-all duration-300">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- Left Side: Input Form & Word List (7 cols on LG) -->
+                <div class="lg:col-span-7 flex flex-col gap-5">
+                    
+                    <!-- Quick Add Card -->
+                    <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80">
+                        <div class="flex items-center justify-between mb-3">
+                            <label for="stampInput" class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-plus-circle text-line-green text-base"></i>
+                                <span data-i18n="inputTitle">新しいスタンプ台詞をCSVへ追加</span>
+                            </label>
+                            <span class="text-xs text-slate-500 font-medium">
+                                <span id="stampCounter" class="font-bold text-line-green">0</span> / 40 個
+                            </span>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="w-full bg-slate-100 rounded-full h-2 mb-4 overflow-hidden">
+                            <div id="progressBar" class="bg-line-green h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+
+                        <form id="addStampForm" onsubmit="handleAddStamp(event)" class="flex flex-col sm:flex-row gap-2">
+                            <div class="relative flex-1">
+                                <input type="text" id="stampInput" placeholder="例: おつかれさま！、りょ！、神すぎる✨" 
+                                    class="w-full pl-4 pr-10 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-line-green/50 focus:border-line-green transition-all"
+                                    maxlength="20" required>
+                                <span class="absolute right-3 top-2.5 text-xs text-slate-400 pointer-events-none" id="charCount">0/20</span>
+                            </div>
+                            <button type="submit" class="bg-line-green hover:bg-line-hover text-white font-bold px-5 py-2.5 rounded-xl shadow-md shadow-line-green/20 flex items-center justify-center gap-2 transition-all active:scale-95">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span data-i18n="addBtn">CSVへ保存</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- List Filter & Actions Bar -->
+                    <div class="flex items-center justify-between gap-2 px-1">
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-list-check text-slate-500"></i>
+                                <span data-i18n="listTitle">共有ワードリスト (data.csv)</span>
+                            </h2>
+                            <span id="stampTotalBadge" class="bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-slate-400 font-medium">3秒ごとにCSVと自動同期</span>
+                        </div>
+                    </div>
+
+                    <!-- Compact Word List Panel -->
+                    <div id="stampListContainer" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 divide-y divide-slate-100 max-h-[580px] overflow-y-auto">
+                        <!-- Dynamic items loaded from CSV -->
+                    </div>
+
+                </div>
+
+                <!-- Right Side: 9:16 Canvas Interactive Previewer (5 cols on LG) -->
+                <div class="lg:col-span-5 lg:sticky lg:top-20">
+                    <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 flex flex-col items-center">
+                        
+                        <!-- Header & Canvas Controls -->
+                        <div class="w-full flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-mobile-screen-button text-line-green text-base"></i>
+                                <h3 class="text-sm font-bold text-slate-800" data-i18n="previewTitle">9:16 リアルタイムキャンバス</h3>
+                            </div>
+                            <span class="text-[10px] font-bold bg-slate-800 text-white px-2.5 py-0.5 rounded-full uppercase tracking-wider">9 : 16 PNG</span>
+                        </div>
+
+                        <!-- Aspect Ratio 9:16 Canvas Container -->
+                        <div id="canvasViewport" class="relative w-full max-w-[280px] sm:max-w-[310px] aspect-9/16 rounded-2xl overflow-hidden shadow-xl border-4 border-slate-800 bg-slate-900 group select-none flex items-center justify-center">
+                            
+                            <!-- Background Image Layer -->
+                            <img id="bgCanvasImage" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80" 
+                                 alt="Stamp Background" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300">
+                            
+                            <!-- Grid / Transparency Guidelines Overlay -->
+                            <div class="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px] opacity-20 pointer-events-none"></div>
+
+                            <!-- Interactive Drag Overlay Text Badge -->
+                            <div id="interactiveStampOverlay" 
+                                 class="absolute z-10 cursor-move transition-transform duration-75 text-center flex items-center justify-center"
+                                 style="top: 40%; left: 10%; right: 10%;">
+                                <div id="stampOverlayBadge" class="px-5 py-3 rounded-2xl bg-white/95 text-slate-900 font-extrabold text-2xl shadow-2xl border-2 border-line-green transform rotate-0 transition-all">
+                                    <span id="stampOverlayText">（台詞を選択してください）</span>
+                                </div>
+                            </div>
+
+                            <!-- Live Slot Indicator Badge on Top Right -->
+                            <div class="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-white/20">
+                                <span class="w-2 h-2 rounded-full bg-line-green animate-pulse"></span>
+                                <span id="currentSlotNumber">No. --</span>
+                            </div>
+
+                            <!-- Helper Tooltip overlay -->
+                            <div class="absolute bottom-3 inset-x-3 bg-black/70 backdrop-blur-md text-white text-[11px] py-1.5 px-3 rounded-xl text-center opacity-90 transition-opacity pointer-events-none">
+                                <i class="fa-solid fa-up-down-left-right text-line-green mr-1"></i>
+                                <span data-i18n="dragTip">タップ／ドラッグで位置調整可能</span>
+                            </div>
+                        </div>
+
+                        <!-- Visual Canvas Customizer Controls -->
+                        <div class="w-full mt-4 space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                            
+                            <!-- Custom Image Upload & Presets -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                                    <span><i class="fa-solid fa-image text-slate-500 mr-1"></i> 背景画像設定</span>
+                                    <span class="text-[10px] text-slate-400">9:16 対応</span>
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <label class="flex-1 cursor-pointer bg-white border border-slate-300 hover:border-line-green text-slate-700 text-xs font-semibold py-1.5 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm">
+                                        <i class="fa-solid fa-upload text-line-green"></i>
+                                        <span data-i18n="uploadImageBtn">画像アップロード</span>
+                                        <input type="file" id="bgUploader" accept="image/png, image/jpeg, image/webp" class="hidden" onchange="handleImageUpload(event)">
+                                    </label>
+                                </div>
+                                <!-- Background Presets -->
+                                <div class="flex items-center gap-2 mt-2">
+                                    <span class="text-[11px] text-slate-500 font-medium">プリセット:</span>
+                                    <button onclick="setBgPreset('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80')" class="w-6 h-6 rounded-full bg-indigo-500 border-2 border-white shadow hover:scale-110 transition-transform" title="Modern Abstract"></button>
+                                    <button onclick="setBgPreset('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=600&q=80')" class="w-6 h-6 rounded-full bg-pink-400 border-2 border-white shadow hover:scale-110 transition-transform" title="Pastel Gradient"></button>
+                                    <button onclick="setBgPreset('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=600&q=80')" class="w-6 h-6 rounded-full bg-slate-800 border-2 border-white shadow hover:scale-110 transition-transform" title="Dark Cyber"></button>
+                                    <button onclick="setBgPreset('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' fill=\'%23e8f8ef\'><rect width=\'100\' height=\'100\' fill=\'%23f4f5f7\'/><circle cx=\'50\' cy=\'50\' r=\'40\' fill=\'%2306C755\' opacity=\'0.15\'/></svg>')" class="w-6 h-6 rounded-full bg-line-green border-2 border-white shadow hover:scale-110 transition-transform" title="LINE Theme"></button>
+                                </div>
+                            </div>
+
+                            <!-- Text Styling Options -->
+                            <div class="pt-2 border-t border-slate-200/80 grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1">文字サイズ</label>
+                                    <input type="range" id="textSizeSlider" min="14" max="36" value="24" oninput="updateStampStyle()" class="w-full accent-line-green">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1">回転 (角度)</label>
+                                    <input type="range" id="textRotateSlider" min="-20" max="20" value="0" oninput="updateStampStyle()" class="w-full accent-line-green">
+                                </div>
+                            </div>
+
+                            <!-- Badge Style Switcher -->
+                            <div class="pt-2 border-t border-slate-200/80 flex items-center justify-between">
+                                <span class="text-[11px] font-bold text-slate-600">スタイル:</span>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="setBadgeStyle('bubble')" class="px-2 py-1 text-[11px] font-bold rounded bg-white border border-slate-300 text-slate-700 hover:border-line-green">吹き出し</button>
+                                    <button onclick="setBadgeStyle('badge')" class="px-2 py-1 text-[11px] font-bold rounded bg-white border border-slate-300 text-slate-700 hover:border-line-green">ステッカー</button>
+                                    <button onclick="setBadgeStyle('minimal')" class="px-2 py-1 text-[11px] font-bold rounded bg-white border border-slate-300 text-slate-700 hover:border-line-green">文字のみ</button>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
-            <div class="list-area" id="wordList">
-                <!-- ここにCSVから読み込んだリストが表示されます -->
+        </section>
+
+        <!-- ================= COMMENTS TAB (コメント・提案) ================= -->
+        <section id="tab-comments" class="tab-content hidden transition-all duration-300">
+            <div class="max-w-4xl mx-auto space-y-6">
+                
+                <!-- Comment Input Header Box -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-line-green text-white flex items-center justify-center font-bold text-lg shadow-sm">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-slate-800" data-i18n="commentHeader">コメント & ワード提案 (CSV保存)</h2>
+                                <p class="text-xs text-slate-500">スタンプ案へのフィードバックやアイデア共有</p>
+                            </div>
+                        </div>
+
+                        <!-- Current User Indicator -->
+                        <button onclick="openUserNameModal()" class="text-xs font-bold text-line-green bg-line-light px-3 py-1.5 rounded-full border border-line-green/30 hover:bg-line-green hover:text-white transition-all">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i>
+                            <span id="commentUserNameDisplay">ユーザー</span>
+                        </button>
+                    </div>
+
+                    <!-- Mention Quick Buttons -->
+                    <div class="mb-3 flex items-center gap-2 flex-wrap">
+                        <span class="text-xs text-slate-400 font-medium">クイックメンション:</span>
+                        <button onclick="insertMention('@まりな')" class="text-xs bg-pink-50 text-pink-600 font-bold px-2.5 py-1 rounded-full border border-pink-200 hover:bg-pink-100 transition-all">
+                            @まりな
+                        </button>
+                        <button onclick="insertMention('@プロデューサー')" class="text-xs bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-full hover:bg-slate-200 transition-all">
+                            @プロデューサー
+                        </button>
+                        <button onclick="insertMention('@イラストレーター')" class="text-xs bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-full hover:bg-slate-200 transition-all">
+                            @イラストレーター
+                        </button>
+                    </div>
+
+                    <!-- Comment Post Form -->
+                    <form onsubmit="handlePostComment(event)" class="space-y-3">
+                        <textarea id="commentInputText" rows="3" placeholder="コメントや新ワード提案を入力してください（@まりな でメンション）"
+                                  class="w-full p-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-line-green/50 focus:border-line-green transition-all" required></textarea>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-slate-400">マナーを守って投稿しましょう</span>
+                            <button type="submit" class="bg-line-green hover:bg-line-hover text-white font-bold px-5 py-2 text-xs sm:text-sm rounded-xl shadow-md shadow-line-green/20 flex items-center gap-2 transition-all">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span data-i18n="postCommentBtn">CSVへ投稿</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Comment Thread List Container -->
+                <div class="space-y-4" id="commentsListContainer">
+                    <!-- Dynamic comment cards loaded from CSV -->
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= INFO TAB (情報 & 設定) ================= -->
+        <section id="tab-info" class="tab-content hidden transition-all duration-300">
+            <div class="max-w-4xl mx-auto space-y-6">
+                
+                <!-- System Language Settings Card -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-language text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-slate-800" data-i18n="langTitle">言語設定 (Language)</h3>
+                                <p class="text-xs text-slate-500" data-i18n="langDesc">アプリ表示言語を切り替えます</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
+                            <button onclick="setLanguage('ja')" id="langBtn-ja" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-800 shadow-sm transition-all">日本語</button>
+                            <button onclick="setLanguage('en')" id="langBtn-en" class="px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all">English</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System & CSV Backend Status Card -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                    <h3 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-server text-indigo-500"></i>
+                        <span>システム & CSV バックエンド通信ステータス</span>
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+                            <span class="text-slate-500 font-medium">CSV サーバー接続:</span>
+                            <span id="infoCsvStatus" class="font-bold text-emerald-600 flex items-center gap-1">
+                                <i class="fa-solid fa-circle-check"></i> オンライン (`/api/data`)
+                            </span>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+                            <span class="text-slate-500 font-medium">同期ポーリング間隔:</span>
+                            <span class="font-mono text-slate-700">3 秒毎 (setInterval)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guidelines & Specifications Sheet -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-cubes text-line-green"></i>
+                        <span>LINEクリエイターズマーケット 制作規格ガイド</span>
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
+                            <span class="text-xs text-slate-500 font-semibold block mb-1">メイン画像 (1枚)</span>
+                            <span class="text-lg font-extrabold text-slate-800">240 × 240 px</span>
+                            <span class="text-[10px] text-slate-400 block mt-1">PNG (透過)</span>
+                        </div>
+                        <div class="bg-line-light p-4 rounded-xl border border-line-green/30 text-center">
+                            <span class="text-xs text-line-green font-bold block mb-1">スタンプ画像 (1セット)</span>
+                            <span class="text-lg font-extrabold text-slate-800">370 × 320 px</span>
+                            <span class="text-[10px] text-line-green block mt-1">8 / 16 / 24 / 32 / 40個</span>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
+                            <span class="text-xs text-slate-500 font-semibold block mb-1">トークルームタブ画像 (1枚)</span>
+                            <span class="text-lg font-extrabold text-slate-800">96 × 74 px</span>
+                            <span class="text-[10px] text-slate-400 block mt-1">PNG (透過)</span>
+                        </div>
+                    </div>
+
+                    <div class="text-xs text-slate-600 space-y-2 leading-relaxed bg-slate-50 p-4 rounded-xl">
+                        <p class="font-bold text-slate-800 mb-1"><i class="fa-solid fa-circle-check text-line-green mr-1"></i> 登録時の重要注意点・免責事項:</p>
+                        <p>・余白ルール：各スタンプ画像には上下左右に10px程度の余白（トリミング枠）を設ける必要があります。</p>
+                        <p>・カラーモード：RGB（CMYK不可）。解像度は72dpi以上推奨。</p>
+                        <p>・テキスト視認性：LINEトーク画面の様々な背景やダークモードに埋もれないよう、白フチまたは黒フチを施すことを推奨します。</p>
+                        <p>・著作権・商標権：他者の権利を侵害する表現や公序良俗に反するテキストは審査却下（リジェクト）の対象となります。</p>
+                    </div>
+                </div>
+
+                <!-- How to Use / Usage Steps -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                        <span>使い方ステップ (How to Use)</span>
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex gap-4 items-start">
+                            <span class="w-7 h-7 rounded-full bg-line-green text-white font-bold text-xs flex items-center justify-center shrink-0">1</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-800">Python サーバーの起動</h4>
+                                <p class="text-xs text-slate-500 mt-0.5">同じフォルダで <code class="bg-slate-100 px-1 py-0.5 rounded font-mono">python app.py</code> を実行します。</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-start">
+                            <span class="w-7 h-7 rounded-full bg-line-green text-white font-bold text-xs flex items-center justify-center shrink-0">2</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-800">台詞案の投稿 & CSV自動同期</h4>
+                                <p class="text-xs text-slate-500 mt-0.5">フレーズを入力すると、Flask APIを経由してフォルダ内の `data.csv` へ即座に書き込まれます。</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-start">
+                            <span class="w-7 h-7 rounded-full bg-line-green text-white font-bold text-xs flex items-center justify-center shrink-0">3</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-800">9:16 キャンバスでビジュアル確認</h4>
+                                <p class="text-xs text-slate-500 mt-0.5">選択したワードを9:16キャンバス上でドラッグ移動・吹き出しスタイルの調整が可能です。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change Log Timeline -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-indigo-500"></i>
+                        <span>沿革 (Update History)</span>
+                    </h3>
+                    <div class="border-l-2 border-slate-200 pl-4 space-y-4 text-xs">
+                        <div>
+                            <span class="font-bold text-line-green">v4.0 (Python CSV API 統合版)</span>
+                            <p class="text-slate-600 mt-0.5">Flask API (`/api/data`, `/api/add`, `/api/delete`) に完全対応。ローカルCSVファイルへのリアルタイム書き込み＆自動同期を実現。</p>
+                        </div>
+                        <div>
+                            <span class="font-bold text-slate-700">v3.0</span>
+                            <p class="text-slate-500 mt-0.5">9:16キャンバス機能およびインタラクティブプレビューの拡張。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Export -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-800">台詞リストのエクスポート</h4>
+                        <p class="text-xs text-slate-500 mt-0.5">現在の共有台詞リストをテキストファイルで保存します</p>
+                    </div>
+                    <button onclick="exportStampData()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-download"></i>
+                        <span>テキスト保存</span>
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- User Name Edit Modal -->
+    <div id="userNameModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden p-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4 border border-slate-200">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-user-pen text-line-green"></i>
+                    <span>表示名の設定</span>
+                </h3>
+                <button onclick="closeUserNameModal()" class="text-slate-400 hover:text-slate-600 text-sm">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">お名前・ハンドルネーム</label>
+                <input type="text" id="modalUserNameInput" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-line-green" maxlength="15" placeholder="例: クリエイターA">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeUserNameModal()" class="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl">キャンセル</button>
+                <button onclick="saveUserNameFromModal()" class="px-4 py-2 text-xs font-bold text-white bg-line-green hover:bg-line-hover rounded-xl shadow">保存する</button>
             </div>
         </div>
     </div>
 
-    <script>
-        let currentData = [];
+    <!-- Notification Toast -->
+    <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold border border-slate-700">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-line-green text-base"></i>
+        <span id="toastMessage">通知メッセージ</span>
+    </div>
 
-        // データをサーバー(CSV)から取得して表示
-        async function loadData() {
+    <!-- ================= JAVASCRIPT & CSV API LOGIC ================= -->
+    <script>
+        let userName = localStorage.getItem('line_user_name') || 'ユーザー_' + Math.floor(1000 + Math.random() * 9000);
+        let stampList = [];
+        let commentsList = [];
+        let selectedStampId = null;
+        let activeBadgeStyle = 'bubble';
+        let currentLang = 'ja';
+        let isServerConnected = false;
+
+        // i18n Translations
+        const i18n = {
+            ja: {
+                tabHome: 'ホーム',
+                tabComments: 'コメント・提案',
+                tabInfo: '情報',
+                inputTitle: '新しいスタンプ台詞をCSVへ追加',
+                addBtn: 'CSVへ保存',
+                listTitle: '共有ワードリスト (data.csv)',
+                previewTitle: '9:16 リアルタイムキャンバス',
+                uploadImageBtn: '画像アップロード',
+                dragTip: 'タップ／ドラッグで位置調整可能',
+                commentHeader: 'コメント & ワード提案 (CSV保存)',
+                postCommentBtn: 'CSVへ投稿',
+                langTitle: '言語設定 (Language)',
+                langDesc: 'アプリ表示言語を切り替えます'
+            },
+            en: {
+                tabHome: 'Home',
+                tabComments: 'Comments & Proposals',
+                tabInfo: 'Info',
+                inputTitle: 'Add Stamp Word to CSV',
+                addBtn: 'Save to CSV',
+                listTitle: 'Shared Word List (data.csv)',
+                previewTitle: '9:16 Real-time Canvas',
+                uploadImageBtn: 'Upload Image',
+                dragTip: 'Tap/Drag to adjust text position',
+                commentHeader: 'Comments & Proposals (CSV)',
+                postCommentBtn: 'Post to CSV',
+                langTitle: 'Language Settings',
+                langDesc: 'Switch application UI language'
+            }
+        };
+
+        // Fetch all data from Python Flask API (/api/data)
+        async function fetchCSVData() {
             try {
                 const response = await fetch('/api/data');
-                currentData = await response.json();
-                renderList();
-            } catch (error) {
-                console.error("データの読み込みに失敗しました", error);
+                if (!response.ok) throw new Error("Server response failed");
+
+                const rawData = await response.json();
+                
+                // Update Server Connection Status Indicator
+                setServerConnectionStatus(true);
+
+                // Separate Words vs Comments/Reactions
+                const words = [];
+                const comments = [];
+
+                rawData.forEach(item => {
+                    const itemType = item.type || 'word';
+                    if (itemType === 'word') {
+                        words.push({
+                            id: item.id,
+                            text: item.text,
+                            creatorName: item.user || '匿名',
+                            createdAt: parseTimestamp(item.timestamp)
+                        });
+                    } else if (itemType === 'comment' || itemType === 'reaction') {
+                        comments.push(item);
+                    }
+                });
+
+                // Process Comments & Aggregate Reactions/Replies
+                const processedComments = processCommentThreads(comments);
+
+                stampList = words;
+                commentsList = processedComments;
+
+                // Auto-select first item if needed
+                if (!selectedStampId && stampList.length > 0) {
+                    selectedStampId = stampList[0].id;
+                } else if (selectedStampId && !stampList.some(s => s.id === selectedStampId)) {
+                    selectedStampId = stampList.length > 0 ? stampList[0].id : null;
+                }
+
+                renderStampList();
+                renderComments();
+                updatePreviewOverlay();
+
+            } catch (err) {
+                console.warn("CSV Server connection check:", err);
+                setServerConnectionStatus(false);
             }
         }
 
-        // 画面にリストを描画
-        function renderList() {
-            const listEl = document.getElementById('wordList');
-            listEl.innerHTML = '';
+        function setServerConnectionStatus(isConnected) {
+            isServerConnected = isConnected;
+            const badge = document.getElementById('syncStatusBadge');
+            const dot = document.getElementById('syncDot');
+            const text = document.getElementById('syncStatusText');
+            const alert = document.getElementById('serverOfflineAlert');
+            const infoStatus = document.getElementById('infoCsvStatus');
 
-            // type='word' のデータだけを抽出
-            const words = currentData.filter(d => d.type === 'word');
-            const comments = currentData.filter(d => d.type === 'comment');
+            if (isConnected) {
+                if (badge) badge.className = "text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold border border-emerald-300 flex items-center gap-1";
+                if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse";
+                if (text) text.innerText = "CSV同期中";
+                if (alert) alert.classList.add('hidden');
+                if (infoStatus) infoStatus.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500"></i> オンライン (/api/data)`;
+            } else {
+                if (badge) badge.className = "text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold border border-red-300 flex items-center gap-1";
+                if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-red-500";
+                if (text) text.innerText = "オフライン";
+                if (alert) alert.classList.remove('hidden');
+                if (infoStatus) infoStatus.innerHTML = `<i class="fa-solid fa-circle-xmark text-red-500"></i> 未接続 (app.pyを実行してください)`;
+            }
+        }
 
-            words.forEach(word => {
-                const card = document.createElement('div');
-                card.className = 'word-card';
-                card.onclick = () => document.getElementById('previewText').innerText = word.text;
+        // Parse Python CSV timestamp format
+        function parseTimestamp(ts) {
+            if (!ts) return Date.now();
+            if (!isNaN(ts) && ts.length > 10) return parseInt(ts, 10);
+            return new Date(ts).getTime() || Date.now();
+        }
 
-                // ワード本体のHTML
-                let html = `
-                    <div class="word-header"><span>${word.user}</span><span>${word.timestamp}</span></div>
-                    <div class="word-text">${word.text}</div>
-                    <div class="comments">
-                `;
+        // Group Comments, Replies, and Reaction Items
+        function processCommentThreads(rawItems) {
+            const commentMap = {};
+            const standaloneComments = [];
 
-                // このワードに対するコメントを抽出
-                const wordComments = comments.filter(c => c.parent_id === word.id);
-                wordComments.forEach(c => {
-                    html += `<div class="comment-item"><b>${c.user}</b>: ${c.text} ${c.reaction ? '('+c.reaction+')' : ''}</div>`;
+            // First pass: identify main comments
+            rawItems.forEach(item => {
+                if (item.type === 'comment' && !item.parent_id) {
+                    commentMap[item.id] = {
+                        id: item.id,
+                        text: item.text,
+                        authorName: item.user || '匿名',
+                        createdAt: parseTimestamp(item.timestamp),
+                        likes: 0,
+                        marinaLikes: 0,
+                        dislikes: 0,
+                        replies: []
+                    };
+                    standaloneComments.push(commentMap[item.id]);
+                }
+            });
+
+            // Second pass: handle replies and reactions
+            rawItems.forEach(item => {
+                if (item.parent_id && commentMap[item.parent_id]) {
+                    const parent = commentMap[item.parent_id];
+                    if (item.type === 'comment') {
+                        parent.replies.push({
+                            id: item.id,
+                            authorName: item.user || '匿名',
+                            text: item.text,
+                            createdAt: parseTimestamp(item.timestamp)
+                        });
+                    } else if (item.type === 'reaction') {
+                        if (item.reaction === 'like') parent.likes++;
+                        if (item.reaction === 'marina') parent.marinaLikes++;
+                        if (item.reaction === 'dislike') parent.dislikes++;
+                    }
+                }
+            });
+
+            // Sort comments descending by date
+            standaloneComments.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            return standaloneComments;
+        }
+
+        // Add new Stamp Word to CSV via Flask POST /api/add
+        window.handleAddStamp = async function(event) {
+            event.preventDefault();
+            const input = document.getElementById('stampInput');
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            if (stampList.length >= 40) {
+                showToast('スタンプは最大40個まで登録可能です', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'word',
+                        text: text,
+                        user: userName
+                    })
                 });
 
-                // コメント追加フォーム
-                html += `
-                        <div style="display:flex; gap:5px; margin-top:8px;">
-                            <input type="text" id="comment-${word.id}" placeholder="コメント..." style="flex:1; padding:5px; font-size:0.8rem;">
-                            <button onclick="addComment('${word.id}', event)" style="padding:5px 10px; font-size:0.8rem;">送信</button>
+                if (!response.ok) throw new Error("API post failed");
+
+                input.value = '';
+                document.getElementById('charCount').innerText = '0/20';
+                showToast('CSVへ新しい台詞を追加しました！');
+                fetchCSVData(); // Immediate Refresh
+            } catch (err) {
+                console.error("Error adding stamp:", err);
+                showToast("CSVへの保存に失敗しました", "error");
+            }
+        };
+
+        // Delete item from CSV via Flask POST /api/delete
+        window.deleteItem = async function(id, e) {
+            if (e) e.stopPropagation();
+            try {
+                const response = await fetch('/api/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                });
+
+                if (!response.ok) throw new Error("Delete failed");
+
+                showToast('削除しました', 'info');
+                fetchCSVData(); // Refresh list
+            } catch (err) {
+                console.error("Error deleting item:", err);
+                showToast("削除処理に失敗しました", "error");
+            }
+        };
+
+        // Select Stamp Word
+        window.selectStamp = function(id) {
+            selectedStampId = id;
+            renderStampList();
+            updatePreviewOverlay();
+        };
+
+        // Render Compact Word List
+        function renderStampList() {
+            const container = document.getElementById('stampListContainer');
+            const counter = document.getElementById('stampCounter');
+            const totalBadge = document.getElementById('stampTotalBadge');
+            const progressBar = document.getElementById('progressBar');
+
+            if (counter) counter.innerText = stampList.length;
+            if (totalBadge) totalBadge.innerText = stampList.length;
+            if (progressBar) progressBar.style.width = `${Math.min((stampList.length / 40) * 100, 100)}%`;
+
+            if (!container) return;
+
+            if (stampList.length === 0) {
+                container.innerHTML = `
+                    <div class="p-10 text-center text-slate-400 space-y-2">
+                        <i class="fa-solid fa-comment-slash text-4xl text-slate-300"></i>
+                        <p class="text-xs font-bold text-slate-600">CSVに登録されている台詞案がありません</p>
+                        <p class="text-[11px] text-slate-400">上のフォームから最初のフレーズを追加してください！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = stampList.map((stamp, idx) => {
+                const isSelected = stamp.id === selectedStampId;
+                const slotNum = String(idx + 1).padStart(2, '0');
+
+                return `
+                    <div onclick="selectStamp('${stamp.id}')" 
+                         class="group p-3 flex items-center justify-between gap-3 cursor-pointer transition-all hover:bg-slate-50 ${isSelected ? 'bg-line-light/70 border-l-4 border-line-green' : ''}">
+                        
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <!-- Slot Index Badge -->
+                            <span class="w-7 h-7 rounded-lg text-xs font-extrabold flex items-center justify-center shrink-0 ${isSelected ? 'bg-line-green text-white shadow-sm' : 'bg-slate-100 text-slate-500'}">
+                                ${slotNum}
+                            </span>
+                            <!-- Stamp Text -->
+                            <span class="text-sm font-extrabold text-slate-800 truncate ${isSelected ? 'text-line-green' : ''}">
+                                ${escapeHtml(stamp.text)}
+                            </span>
+                        </div>
+
+                        <!-- Action Control Buttons -->
+                        <div class="flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="copyStampText('${escapeHtml(stamp.text)}', event)" class="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-600 text-xs flex items-center justify-center" title="テキストをコピー">
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                            <button onclick="deleteItem('${stamp.id}', event)" class="w-7 h-7 rounded-lg hover:bg-red-100 text-red-500 text-xs flex items-center justify-center" title="削除">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
                         </div>
                     </div>
                 `;
-                card.innerHTML = html;
-                listEl.appendChild(card);
-            });
+            }).join('');
         }
 
-        // 新しいワードを送信
-        async function addWord() {
-            const text = document.getElementById('wordInput').value;
-            const user = document.getElementById('username').value;
+        // Post new comment to CSV via Flask API
+        window.handlePostComment = async function(e) {
+            e.preventDefault();
+            const textarea = document.getElementById('commentInputText');
+            const text = textarea.value.trim();
+
             if (!text) return;
 
-            await fetch('/api/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'word', text: text, user: user })
-            });
+            try {
+                await fetch('/api/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'comment',
+                        text: text,
+                        user: userName
+                    })
+                });
 
-            document.getElementById('wordInput').value = '';
-            loadData(); // 再読み込み
-        }
+                textarea.value = '';
+                showToast('CSVへコメントを投稿しました！');
+                fetchCSVData();
+            } catch (err) {
+                console.error("Error posting comment:", err);
+                showToast("コメントの送信に失敗しました", "error");
+            }
+        };
 
-        // コメントを送信
-        async function addComment(parentId, event) {
-            event.stopPropagation(); // 親のクリックイベント(プレビュー変更)を防ぐ
-            const text = document.getElementById(`comment-${parentId}`).value;
-            const user = document.getElementById('username').value;
+        // Reactions (Likes, Marina!, Dislikes)
+        window.handleReaction = async function(commentId, type) {
+            try {
+                await fetch('/api/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'reaction',
+                        parent_id: commentId,
+                        reaction: type,
+                        user: userName
+                    })
+                });
+                fetchCSVData();
+            } catch (err) {
+                console.error("Error posting reaction:", err);
+            }
+        };
+
+        // Reply to Comment
+        window.handlePostReply = async function(commentId, e) {
+            e.preventDefault();
+            const input = document.getElementById(`replyInput-${commentId}`);
+            const text = input.value.trim();
+
             if (!text) return;
 
-            await fetch('/api/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'comment', text: text, user: user, parent_id: parentId })
-            });
-            loadData(); // 再読み込み
+            try {
+                await fetch('/api/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'comment',
+                        parent_id: commentId,
+                        text: text,
+                        user: userName
+                    })
+                });
+
+                showToast('返信を送信しました');
+                fetchCSVData();
+            } catch (err) {
+                console.error("Error posting reply:", err);
+            }
+        };
+
+        // Render Comment Threads
+        function renderComments() {
+            const container = document.getElementById('commentsListContainer');
+            const badge = document.getElementById('commentBadge');
+
+            if (badge) badge.innerText = commentsList.length;
+
+            if (!container) return;
+
+            if (commentsList.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white p-10 rounded-2xl border border-slate-200 text-center text-slate-400 space-y-2">
+                        <i class="fa-solid fa-comments text-4xl text-slate-300"></i>
+                        <p class="text-xs font-bold text-slate-600">まだコメントや提案がありません</p>
+                        <p class="text-[11px] text-slate-400">最初のコメントやおすすめアイデアを投稿して共有しましょう！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = commentsList.map(c => {
+                const timeAgoStr = formatTimeAgo(c.createdAt);
+
+                return `
+                    <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200 space-y-3">
+                        <!-- Comment Author & Header -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full bg-slate-700 text-white font-bold text-xs flex items-center justify-center shadow-sm">
+                                    ${escapeHtml((c.authorName || 'User').substring(0, 2))}
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                                        <span>${escapeHtml(c.authorName || '匿名ユーザー')}</span>
+                                    </h4>
+                                    <span class="text-[10px] text-slate-400">${timeAgoStr}</span>
+                                </div>
+                            </div>
+                            <button onclick="deleteItem('${c.id}', event)" class="text-slate-400 hover:text-red-500 text-xs px-2 py-1 rounded-md hover:bg-red-50 transition-colors" title="削除">
+                                <i class="fa-solid fa-trash-can"></i> 削除
+                            </button>
+                        </div>
+
+                        <!-- Comment Text Body -->
+                        <p class="text-xs sm:text-sm text-slate-700 leading-relaxed pl-12">
+                            ${highlightMentions(escapeHtml(c.text))}
+                        </p>
+
+                        <!-- Interactive Reaction Action Bar -->
+                        <div class="flex items-center gap-2 pl-12 pt-1 flex-wrap">
+                            <!-- Like Button -->
+                            <button onclick="handleReaction('${c.id}', 'like')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 text-xs font-semibold transition-colors border border-slate-200/80">
+                                <i class="fa-regular fa-thumbs-up"></i>
+                                <span>いいね</span>
+                                <span class="bg-slate-200 text-slate-700 text-[10px] px-1.5 py-0.2 rounded-full font-bold">${c.likes || 0}</span>
+                            </button>
+
+                            <!-- Custom Unique "まりな！" Button -->
+                            <button onclick="handleReaction('${c.id}', 'marina')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-600 text-xs font-bold transition-all border border-pink-200 shadow-sm active:scale-95">
+                                <i class="fa-solid fa-ribbon animate-bounce-subtle"></i>
+                                <span>まりな！</span>
+                                <span class="bg-pink-200 text-pink-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold animate-pop">${c.marinaLikes || 0}</span>
+                            </button>
+
+                            <!-- Dislike Button -->
+                            <button onclick="handleReaction('${c.id}', 'dislike')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 text-xs font-semibold transition-colors">
+                                <i class="fa-regular fa-thumbs-down"></i>
+                                <span>わるいね (${c.dislikes || 0})</span>
+                            </button>
+
+                            <!-- Reply Toggle Button -->
+                            <button onclick="toggleReplyBox('${c.id}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-line-light text-slate-600 hover:text-line-green text-xs font-semibold transition-colors ml-auto">
+                                <i class="fa-solid fa-reply"></i>
+                                <span>返信</span>
+                                <span class="text-[10px] font-bold">(${c.replies ? c.replies.length : 0})</span>
+                            </button>
+                        </div>
+
+                        <!-- Nested Replies Container -->
+                        ${c.replies && c.replies.length > 0 ? `
+                            <div class="ml-12 pl-3 border-l-2 border-slate-200 space-y-2 mt-2 pt-2">
+                                ${c.replies.map(r => `
+                                    <div class="bg-slate-50 p-2.5 rounded-xl text-xs space-y-1">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-bold text-slate-800">${escapeHtml(r.authorName || 'ユーザー')}</span>
+                                            <span class="text-[10px] text-slate-400">${formatTimeAgo(r.createdAt)}</span>
+                                        </div>
+                                        <p class="text-slate-600">${escapeHtml(r.text)}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        <!-- Reply Input Form Box -->
+                        <div id="replyBox-${c.id}" class="hidden ml-12 pt-2">
+                            <form onsubmit="handlePostReply('${c.id}', event)" class="flex gap-2">
+                                <input type="text" id="replyInput-${c.id}" placeholder="返信を入力..." class="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-1 focus:ring-line-green" required>
+                                <button type="submit" class="bg-line-green text-white px-3 py-1.5 text-xs font-bold rounded-xl shadow">送信</button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        // 初回読み込みと、5秒ごとの自動更新（簡易的なリアルタイム同期）
-        loadData();
-        setInterval(loadData, 5000); 
+        // Update 9:16 Visual Canvas Overlay
+        function updatePreviewOverlay() {
+            const selected = stampList.find(s => s.id === selectedStampId);
+            const overlayText = document.getElementById('stampOverlayText');
+            const slotNumber = document.getElementById('currentSlotNumber');
+
+            if (selected) {
+                const idx = stampList.findIndex(s => s.id === selectedStampId) + 1;
+                if (overlayText) overlayText.innerText = selected.text;
+                if (slotNumber) slotNumber.innerText = `No. ${String(idx).padStart(2, '0')}`;
+            } else {
+                if (overlayText) overlayText.innerText = '（台詞を選択してください）';
+                if (slotNumber) slotNumber.innerText = 'No. --';
+            }
+
+            updateStampStyle();
+        }
+
+        // Canvas Styling Controls
+        window.updateStampStyle = function() {
+            const badge = document.getElementById('stampOverlayBadge');
+            const sizeSlider = document.getElementById('textSizeSlider');
+            const rotateSlider = document.getElementById('textRotateSlider');
+
+            if (!badge || !sizeSlider || !rotateSlider) return;
+
+            const size = sizeSlider.value;
+            const rotate = rotateSlider.value;
+
+            badge.style.fontSize = `${size}px`;
+            badge.style.transform = `rotate(${rotate}deg)`;
+
+            badge.className = 'px-4 py-2.5 rounded-2xl shadow-2xl transition-all duration-150 transform ';
+            
+            if (activeBadgeStyle === 'bubble') {
+                badge.className += 'bg-white text-slate-900 font-black border-2 border-slate-900 bubble-tail-bottom';
+            } else if (activeBadgeStyle === 'badge') {
+                badge.className += 'bg-line-green text-white font-black border-2 border-white ring-2 ring-line-green';
+            } else if (activeBadgeStyle === 'minimal') {
+                badge.className += 'bg-transparent text-white font-black text-stroke-black drop-shadow-lg';
+            }
+        };
+
+        window.setBadgeStyle = function(style) {
+            activeBadgeStyle = style;
+            updateStampStyle();
+        };
+
+        // Canvas Background Image Handlers
+        window.handleImageUpload = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                document.getElementById('bgCanvasImage').src = evt.target.result;
+                showToast('背景画像をアップロードしました！');
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.setBgPreset = function(url) {
+            document.getElementById('bgCanvasImage').src = url;
+            showToast('背景プリセットを適用しました');
+        };
+
+        // Drag overlay logic for canvas
+        function setupCanvasOverlayDrag() {
+            const overlay = document.getElementById('interactiveStampOverlay');
+            const viewport = document.getElementById('canvasViewport');
+
+            if (!overlay || !viewport) return;
+
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+
+            function onStart(e) {
+                isDragging = true;
+                const touch = e.touches ? e.touches[0] : e;
+                startX = touch.clientX;
+                startY = touch.clientY;
+                initialLeft = overlay.offsetLeft;
+                initialTop = overlay.offsetTop;
+            }
+
+            function onMove(e) {
+                if (!isDragging) return;
+                const touch = e.touches ? e.touches[0] : e;
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+
+                const newLeft = initialLeft + deltaX;
+                const newTop = initialTop + deltaY;
+
+                overlay.style.left = `${newLeft}px`;
+                overlay.style.top = `${newTop}px`;
+                overlay.style.right = 'auto';
+            }
+
+            function onEnd() {
+                isDragging = false;
+            }
+
+            overlay.addEventListener('mousedown', onStart);
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onEnd);
+
+            overlay.addEventListener('touchstart', onStart, { passive: true });
+            window.addEventListener('touchmove', onMove, { passive: true });
+            window.addEventListener('touchend', onEnd);
+        }
+
+        // User Name Modal Logic
+        window.openUserNameModal = function() {
+            document.getElementById('modalUserNameInput').value = userName;
+            document.getElementById('userNameModal').classList.remove('hidden');
+        };
+
+        window.closeUserNameModal = function() {
+            document.getElementById('userNameModal').classList.add('hidden');
+        };
+
+        window.saveUserNameFromModal = function() {
+            const val = document.getElementById('modalUserNameInput').value.trim();
+            if (val) {
+                userName = val;
+                localStorage.setItem('line_user_name', userName);
+                updateUserNameDisplays();
+                showToast(`表示名を「${userName}」に変更しました`);
+            }
+            closeUserNameModal();
+        };
+
+        function updateUserNameDisplays() {
+            const headerName = document.getElementById('headerUserName');
+            const commentName = document.getElementById('commentUserNameDisplay');
+            if (headerName) headerName.innerText = userName;
+            if (commentName) commentName.innerText = userName;
+        }
+
+        // Tab Switching
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab').forEach(el => {
+                el.classList.remove('bg-white', 'text-line-green', 'shadow-sm');
+                el.classList.add('text-slate-600');
+            });
+
+            const activeTab = document.getElementById(`tab-${tabName}`);
+            const activeBtn = document.getElementById(`tabBtn-${tabName}`);
+
+            if (activeTab && activeBtn) {
+                activeTab.classList.remove('hidden');
+                activeBtn.classList.add('bg-white', 'text-line-green', 'shadow-sm');
+                activeBtn.classList.remove('text-slate-600');
+            }
+        };
+
+        // Utility Helpers
+        window.insertMention = function(mention) {
+            const textarea = document.getElementById('commentInputText');
+            if (textarea) {
+                textarea.value += (textarea.value ? ' ' : '') + mention + ' ';
+                textarea.focus();
+            }
+        };
+
+        window.toggleReplyBox = function(commentId) {
+            const replyBox = document.getElementById(`replyBox-${commentId}`);
+            if (replyBox) replyBox.classList.toggle('hidden');
+        };
+
+        window.copyStampText = function(text, e) {
+            if (e) e.stopPropagation();
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast(`「${text}」をコピーしました！`);
+        };
+
+        window.exportStampData = function() {
+            if (stampList.length === 0) {
+                showToast('エクスポートする台詞がありません', 'error');
+                return;
+            }
+            const content = stampList.map((s, i) => `${String(i + 1).padStart(2, '0')}. ${s.text}`).join('\n');
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `LINE_Stamp_Words_${new Date().toISOString().slice(0, 10)}.txt`;
+            a.click();
+            showToast('テキストファイルを保存しました！');
+        };
+
+        window.setLanguage = function(lang) {
+            currentLang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang] && i18n[lang][key]) {
+                    el.innerText = i18n[lang][key];
+                }
+            });
+
+            const btnJa = document.getElementById('langBtn-ja');
+            const btnEn = document.getElementById('langBtn-en');
+            if (lang === 'ja') {
+                btnJa.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-800 shadow-sm transition-all';
+                btnEn.className = 'px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all';
+            } else {
+                btnEn.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-800 shadow-sm transition-all';
+                btnJa.className = 'px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all';
+            }
+
+            showToast(`Language changed to ${lang === 'ja' ? '日本語' : 'English'}`);
+        };
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            if (!toast || !toastMsg) return;
+
+            toastMsg.innerText = msg;
+
+            if (type === 'error') {
+                toastIcon.className = 'fa-solid fa-triangle-exclamation text-red-400 text-base';
+            } else if (type === 'info') {
+                toastIcon.className = 'fa-solid fa-circle-info text-blue-400 text-base';
+            } else {
+                toastIcon.className = 'fa-solid fa-circle-check text-line-green text-base';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+
+        function highlightMentions(str) {
+            return str.replace(/(@[^\s]+)/g, '<span class="bg-pink-100 text-pink-600 font-bold px-1.5 py-0.5 rounded">$1</span>');
+        }
+
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return 'たった今';
+            const diffSec = Math.floor((Date.now() - timestamp) / 1000);
+            if (diffSec < 60) return 'たった今';
+            if (diffSec < 3600) return `${Math.floor(diffSec / 60)}分前`;
+            if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}時間前`;
+            return `${Math.floor(diffSec / 86400)}日前`;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        }
+
+        // Page Initializer
+        window.onload = function() {
+            updateUserNameDisplays();
+            setupCanvasOverlayDrag();
+
+            const input = document.getElementById('stampInput');
+            const counter = document.getElementById('charCount');
+            if (input && counter) {
+                input.addEventListener('input', (e) => {
+                    counter.innerText = `${e.target.value.length}/20`;
+                });
+            }
+
+            // Fetch initial CSV data
+            fetchCSVData();
+
+            // Set auto-polling interval for CSV sync (Every 3 seconds)
+            setInterval(fetchCSVData, 3000);
+        };
     </script>
 </body>
 </html>
