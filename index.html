@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LINE Stamp Word Planner & 9:16 Previewer</title>
+    <title>LINE Stamp Word Planner & Real-time Canvas</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Noto Sans JP & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -72,12 +72,6 @@
             paint-order: stroke fill;
         }
 
-        /* Glassmorphism effects */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
-        }
-
         /* Stamp speech bubble presets */
         .bubble-tail-bottom::after {
             content: '';
@@ -114,36 +108,48 @@
     <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Brand Title -->
+                <!-- Brand Title & Connection Status -->
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-2xl bg-line-green text-white flex items-center justify-center font-bold text-xl shadow-md shadow-line-green/30">
-                        <i class="fa-solid fa-[#fa-icons] fa-comment-dots"></i>
+                        <i class="fa-solid fa-comment-dots"></i>
                     </div>
                     <div>
                         <h1 class="text-base sm:text-lg font-extrabold text-slate-800 leading-tight flex items-center gap-2">
                             <span>スタンプ台詞案 Studio</span>
-                            <span class="text-xs bg-line-light text-line-green px-2 py-0.5 rounded-full font-semibold border border-line-green/20">v2.5</span>
+                            <span id="syncStatusBadge" class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold border border-emerald-300 flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span id="syncStatusText">接続中...</span>
+                            </span>
                         </h1>
-                        <p class="text-xs text-slate-500 hidden sm:block" id="appSubHeader">LINEスタンプのフレーズ管理 ＆ 9:16画像シミュレーター</p>
+                        <p class="text-xs text-slate-500 hidden sm:block">リアルタイム言葉提案・LINEスタンプ 9:16 プレビュー</p>
                     </div>
                 </div>
 
-                <!-- Desktop Navigation Tabs -->
-                <nav class="flex items-center gap-1 sm:gap-2 bg-slate-100 p-1 rounded-xl">
-                    <button onclick="switchTab('home')" id="tabBtn-home" class="nav-tab flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 bg-white text-line-green shadow-sm">
-                        <i class="fa-solid fa-house"></i>
-                        <span data-i18n="tabHome">ホーム</span>
+                <!-- Right Navigation Tabs & User Profile Name -->
+                <div class="flex items-center gap-2">
+                    <!-- User Profile Quick Editor -->
+                    <button onclick="openUserNameModal()" class="hidden sm:flex items-center gap-2 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 transition-colors border border-slate-200">
+                        <i class="fa-solid fa-user-gear text-line-green"></i>
+                        <span id="headerUserName">ユーザー</span>
                     </button>
-                    <button onclick="switchTab('comments')" id="tabBtn-comments" class="nav-tab flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-200">
-                        <i class="fa-solid fa-comments"></i>
-                        <span data-i18n="tabComments">コメント欄</span>
-                        <span id="commentBadge" class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">4</span>
-                    </button>
-                    <button onclick="switchTab('info')" id="tabBtn-info" class="nav-tab flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-200">
-                        <i class="fa-solid fa-circle-info"></i>
-                        <span data-i18n="tabInfo">情報</span>
-                    </button>
-                </nav>
+
+                    <!-- Desktop Navigation Tabs -->
+                    <nav class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                        <button onclick="switchTab('home')" id="tabBtn-home" class="nav-tab flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 bg-white text-line-green shadow-sm">
+                            <i class="fa-solid fa-house"></i>
+                            <span data-i18n="tabHome">ホーム</span>
+                        </button>
+                        <button onclick="switchTab('comments')" id="tabBtn-comments" class="nav-tab flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-200 relative">
+                            <i class="fa-solid fa-comments"></i>
+                            <span data-i18n="tabComments">コメント・提案</span>
+                            <span id="commentBadge" class="bg-red-500 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">0</span>
+                        </button>
+                        <button onclick="switchTab('info')" id="tabBtn-info" class="nav-tab flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-200">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span data-i18n="tabInfo">情報</span>
+                        </button>
+                    </nav>
+                </div>
             </div>
         </div>
     </header>
@@ -153,21 +159,20 @@
 
         <!-- ================= HOME TAB (Main Stamp Planner & 9:16 Canvas) ================= -->
         <section id="tab-home" class="tab-content transition-all duration-300">
-            <!-- Responsive Grid: Left Input & Compact List / Right 9:16 Previewer -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
-                <!-- Left Side: Input Form & Compact Word List (7 cols on LG) -->
+                <!-- Left Side: Realtime Input Form & Word List (7 cols on LG) -->
                 <div class="lg:col-span-7 flex flex-col gap-5">
                     
                     <!-- Quick Add Card -->
                     <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80">
                         <div class="flex items-center justify-between mb-3">
                             <label for="stampInput" class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                                <i class="fa-solid fa-plus-circle text-line-green"></i>
-                                <span data-i18n="inputTitle">新しいスタンプ台詞を追加</span>
+                                <i class="fa-solid fa-plus-circle text-line-green text-base"></i>
+                                <span data-i18n="inputTitle">リアルタイムで新しいスタンプ台詞を追加</span>
                             </label>
                             <span class="text-xs text-slate-500 font-medium">
-                                <span id="stampCounter" class="font-bold text-line-green">0</span> / 40 個 (セット基準)
+                                <span id="stampCounter" class="font-bold text-line-green">0</span> / 40 個
                             </span>
                         </div>
 
@@ -188,16 +193,6 @@
                                 <span data-i18n="addBtn">追加する</span>
                             </button>
                         </form>
-
-                        <!-- Quick Template Tags -->
-                        <div class="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
-                            <span class="font-semibold text-slate-400" data-i18n="presetTagLabel">定番タグ:</span>
-                            <button onclick="insertTemplate('了解です！')" class="px-2 py-0.5 bg-slate-100 hover:bg-line-light hover:text-line-green rounded-md transition-colors">了解です！</button>
-                            <button onclick="insertTemplate('お疲れさま✨')" class="px-2 py-0.5 bg-slate-100 hover:bg-line-light hover:text-line-green rounded-md transition-colors">お疲れさま✨</button>
-                            <button onclick="insertTemplate('神！')" class="px-2 py-0.5 bg-slate-100 hover:bg-line-light hover:text-line-green rounded-md transition-colors">神！</button>
-                            <button onclick="insertTemplate('なるほどね')" class="px-2 py-0.5 bg-slate-100 hover:bg-line-light hover:text-line-green rounded-md transition-colors">なるほどね</button>
-                            <button onclick="insertTemplate('草')" class="px-2 py-0.5 bg-slate-100 hover:bg-line-light hover:text-line-green rounded-md transition-colors">草</button>
-                        </div>
                     </div>
 
                     <!-- List Filter & Actions Bar -->
@@ -205,40 +200,37 @@
                         <div class="flex items-center gap-2">
                             <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
                                 <i class="fa-solid fa-list-check text-slate-500"></i>
-                                <span data-i18n="listTitle">台詞リスト</span>
+                                <span data-i18n="listTitle">共有ワードリスト</span>
                             </h2>
                             <span id="stampTotalBadge" class="bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button onclick="clearAllStamps()" class="text-xs text-slate-400 hover:text-red-500 flex items-center gap-1 transition-colors px-2 py-1 rounded-md hover:bg-red-50">
-                                <i class="fa-solid fa-trash-can"></i>
-                                <span data-i18n="clearAllBtn">すべて消去</span>
-                            </button>
+                            <span class="text-xs text-slate-400 font-medium">全員の画面へリアルタイム反映</span>
                         </div>
                     </div>
 
                     <!-- Compact Word List Panel -->
                     <div id="stampListContainer" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 divide-y divide-slate-100 max-h-[580px] overflow-y-auto">
-                        <!-- Dynamic items rendered here -->
+                        <!-- Dynamic items rendered from Firestore -->
                     </div>
 
                 </div>
 
                 <!-- Right Side: 9:16 Canvas Interactive Previewer (5 cols on LG) -->
-                <div class="lg:col-span-5 sticky top-20">
+                <div class="lg:col-span-5 lg:sticky lg:top-20">
                     <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 flex flex-col items-center">
                         
                         <!-- Header & Canvas Controls -->
                         <div class="w-full flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
                             <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-[#fa-icons] fa-mobile-screen-button text-line-green"></i>
-                                <h3 class="text-sm font-bold text-slate-800" data-i18n="previewTitle">9:16 プレビューキャンバス</h3>
+                                <i class="fa-solid fa-mobile-screen-button text-line-green text-base"></i>
+                                <h3 class="text-sm font-bold text-slate-800" data-i18n="previewTitle">9:16 リアルタイムキャンバス</h3>
                             </div>
-                            <span class="text-[10px] font-bold bg-slate-800 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">9 : 16 PNG</span>
+                            <span class="text-[10px] font-bold bg-slate-800 text-white px-2.5 py-0.5 rounded-full uppercase tracking-wider">9 : 16 PNG</span>
                         </div>
 
                         <!-- Aspect Ratio 9:16 Canvas Container -->
-                        <div class="relative w-full max-w-[280px] sm:max-w-[310px] aspect-9/16 rounded-2xl overflow-hidden shadow-xl border-4 border-slate-800 bg-slate-900 group select-none flex items-center justify-center">
+                        <div id="canvasViewport" class="relative w-full max-w-[280px] sm:max-w-[310px] aspect-9/16 rounded-2xl overflow-hidden shadow-xl border-4 border-slate-800 bg-slate-900 group select-none flex items-center justify-center">
                             
                             <!-- Background Image Layer -->
                             <img id="bgCanvasImage" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80" 
@@ -259,13 +251,13 @@
                             <!-- Live Slot Indicator Badge on Top Right -->
                             <div class="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-white/20">
                                 <span class="w-2 h-2 rounded-full bg-line-green animate-pulse"></span>
-                                <span id="currentSlotNumber">No. 01</span>
+                                <span id="currentSlotNumber">No. --</span>
                             </div>
 
-                            <!-- Helper Tooltip overlay on hover -->
-                            <div class="absolute bottom-3 inset-x-3 bg-black/70 backdrop-blur-md text-white text-[11px] py-1.5 px-3 rounded-xl text-center opacity-90 transition-opacity">
+                            <!-- Helper Tooltip overlay -->
+                            <div class="absolute bottom-3 inset-x-3 bg-black/70 backdrop-blur-md text-white text-[11px] py-1.5 px-3 rounded-xl text-center opacity-90 transition-opacity pointer-events-none">
                                 <i class="fa-solid fa-up-down-left-right text-line-green mr-1"></i>
-                                <span data-i18n="dragTip">台詞をドラッグ＆スタイル調整可能</span>
+                                <span data-i18n="dragTip">タップ／ドラッグで位置調整可能</span>
                             </div>
                         </div>
 
@@ -276,7 +268,7 @@
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
                                     <span><i class="fa-solid fa-image text-slate-500 mr-1"></i> 背景画像設定</span>
-                                    <span class="text-[10px] text-slate-400">9:16 PNG推奨</span>
+                                    <span class="text-[10px] text-slate-400">9:16 画像対応</span>
                                 </label>
                                 <div class="flex items-center gap-2">
                                     <label class="flex-1 cursor-pointer bg-white border border-slate-300 hover:border-line-green text-slate-700 text-xs font-semibold py-1.5 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm">
@@ -309,7 +301,7 @@
 
                             <!-- Badge Style Switcher -->
                             <div class="pt-2 border-t border-slate-200/80 flex items-center justify-between">
-                                <span class="text-[11px] font-bold text-slate-600">フチ・装飾スタイル:</span>
+                                <span class="text-[11px] font-bold text-slate-600">スタイル:</span>
                                 <div class="flex items-center gap-1">
                                     <button onclick="setBadgeStyle('bubble')" class="px-2 py-1 text-[11px] font-bold rounded bg-white border border-slate-300 text-slate-700 hover:border-line-green">吹き出し</button>
                                     <button onclick="setBadgeStyle('badge')" class="px-2 py-1 text-[11px] font-bold rounded bg-white border border-slate-300 text-slate-700 hover:border-line-green">ステッカー</button>
@@ -325,26 +317,34 @@
             </div>
         </section>
 
-        <!-- ================= COMMENTS TAB (コメント欄) ================= -->
+        <!-- ================= COMMENTS TAB (コメント・提案) ================= -->
         <section id="tab-comments" class="tab-content hidden transition-all duration-300">
             <div class="max-w-4xl mx-auto space-y-6">
                 
                 <!-- Comment Input Header Box -->
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold">
-                            <i class="fa-solid fa-user"></i>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-line-green text-white flex items-center justify-center font-bold text-lg shadow-sm">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-slate-800" data-i18n="commentHeader">コメント & ワードリアルタイム提案</h2>
+                                <p class="text-xs text-slate-500">スタンプ案へのフィードバックやアイデア共有（全員に即座に同期されます）</p>
+                            </div>
                         </div>
-                        <div>
-                            <h2 class="text-base font-bold text-slate-800" data-i18n="commentHeader">コミュニティ・コメント欄</h2>
-                            <p class="text-xs text-slate-500">スタンプ案へのフィードバックやアイデア共有</p>
-                        </div>
+
+                        <!-- Current User Indicator -->
+                        <button onclick="openUserNameModal()" class="text-xs font-bold text-line-green bg-line-light px-3 py-1.5 rounded-full border border-line-green/30 hover:bg-line-green hover:text-white transition-all">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i>
+                            <span id="commentUserNameDisplay">ユーザー</span>
+                        </button>
                     </div>
 
                     <!-- Mention Quick Buttons -->
                     <div class="mb-3 flex items-center gap-2 flex-wrap">
                         <span class="text-xs text-slate-400 font-medium">クイックメンション:</span>
-                        <button onclick="insertMention('@まりな')" class="text-xs bg-line-light text-line-green font-bold px-2.5 py-1 rounded-full border border-line-green/20 hover:bg-line-green hover:text-white transition-all">
+                        <button onclick="insertMention('@まりな')" class="text-xs bg-pink-50 text-pink-600 font-bold px-2.5 py-1 rounded-full border border-pink-200 hover:bg-pink-100 transition-all">
                             @まりな
                         </button>
                         <button onclick="insertMention('@プロデューサー')" class="text-xs bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-full hover:bg-slate-200 transition-all">
@@ -357,22 +357,22 @@
 
                     <!-- Comment Post Form -->
                     <form onsubmit="handlePostComment(event)" class="space-y-3">
-                        <textarea id="commentInputText" rows="3" placeholder="コメントを入力してください（@まりな でメンション機能が使えます）"
+                        <textarea id="commentInputText" rows="3" placeholder="コメントや新ワード提案を入力してください（@まりな でメンション）"
                                   class="w-full p-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-line-green/50 focus:border-line-green transition-all" required></textarea>
                         
                         <div class="flex items-center justify-between">
                             <span class="text-xs text-slate-400">マナーを守って投稿しましょう</span>
                             <button type="submit" class="bg-line-green hover:bg-line-hover text-white font-bold px-5 py-2 text-xs sm:text-sm rounded-xl shadow-md shadow-line-green/20 flex items-center gap-2 transition-all">
                                 <i class="fa-solid fa-paper-plane"></i>
-                                <span data-i18n="postCommentBtn">送信する</span>
+                                <span data-i18n="postCommentBtn">リアルタイム投稿</span>
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <!-- Comment Thread List -->
+                <!-- Comment Thread List Container -->
                 <div class="space-y-4" id="commentsListContainer">
-                    <!-- Dynamic comment cards rendered via JavaScript -->
+                    <!-- Dynamic comment cards rendered from Firestore -->
                 </div>
 
             </div>
@@ -397,6 +397,26 @@
                         <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
                             <button onclick="setLanguage('ja')" id="langBtn-ja" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-800 shadow-sm transition-all">日本語</button>
                             <button onclick="setLanguage('en')" id="langBtn-en" class="px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all">English</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System & Firebase Realtime Status Card -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                    <h3 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-tower-cell text-emerald-500"></i>
+                        <span>システム & リアルタイム通信ステータス</span>
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+                            <span class="text-slate-500 font-medium">データベース同期:</span>
+                            <span id="dbStatusBadge" class="font-bold text-emerald-600 flex items-center gap-1">
+                                <i class="fa-solid fa-circle-check"></i> オンライン (Firestore)
+                            </span>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+                            <span class="text-slate-500 font-medium">セッション ユーザーID:</span>
+                            <span id="currentUserIdText" class="font-mono text-slate-700 truncate max-w-[150px]">接続中...</span>
                         </div>
                     </div>
                 </div>
@@ -427,10 +447,11 @@
                     </div>
 
                     <div class="text-xs text-slate-600 space-y-2 leading-relaxed bg-slate-50 p-4 rounded-xl">
-                        <p class="font-bold text-slate-800 mb-1"><i class="fa-solid fa-circle-check text-line-green mr-1"></i> 登録時の重要注意点:</p>
+                        <p class="font-bold text-slate-800 mb-1"><i class="fa-solid fa-circle-check text-line-green mr-1"></i> 登録時の重要注意点・免責事項:</p>
                         <p>・余白ルール：各スタンプ画像には上下左右に10px程度の余白（トリミング枠）を設ける必要があります。</p>
                         <p>・カラーモード：RGB（CMYK不可）。解像度は72dpi以上推奨。</p>
-                        <p>・テキスト視認性：LINEのトーク画面背景（ダークモードや着せかえ）に埋もれないよう、白フチ加工を施すことを推奨します。</p>
+                        <p>・テキスト視認性：LINEトーク画面の様々な背景やダークモードに埋もれないよう、白フチまたは黒フチを施すことを推奨します。</p>
+                        <p>・著作権・商標権：他者の権利を侵害する表現や公序良俗に反するテキストは審査却下（リジェクト）の対象となります。</p>
                     </div>
                 </div>
 
@@ -444,22 +465,22 @@
                         <div class="flex gap-4 items-start">
                             <span class="w-7 h-7 rounded-full bg-line-green text-white font-bold text-xs flex items-center justify-center shrink-0">1</span>
                             <div>
-                                <h4 class="text-xs font-bold text-slate-800">台詞案の入力と管理</h4>
-                                <p class="text-xs text-slate-500 mt-0.5">ホーム画面から日常会話でよく使われるフレーズを入力。40個の枠を埋めながらバリエーションを整理します。</p>
+                                <h4 class="text-xs font-bold text-slate-800">台詞案のリアルタイム登録</h4>
+                                <p class="text-xs text-slate-500 mt-0.5">ホーム画面でフレーズを入力すると、リアルタイムデータベースを通じてチーム全員の画面に即時反映されます。</p>
                             </div>
                         </div>
                         <div class="flex gap-4 items-start">
                             <span class="w-7 h-7 rounded-full bg-line-green text-white font-bold text-xs flex items-center justify-center shrink-0">2</span>
                             <div>
-                                <h4 class="text-xs font-bold text-slate-800">9:16 キャンバスでビジュアル調整</h4>
-                                <p class="text-xs text-slate-500 mt-0.5">イラスト背景画像（9:16 PNG）をアップロードし、テキストの位置やフォントサイズ、吹き出しスタイルをリアルタイムで確認します。</p>
+                                <h4 class="text-xs font-bold text-slate-800">9:16 キャンバスでビジュアルシミュレーション</h4>
+                                <p class="text-xs text-slate-500 mt-0.5">リストでワードを選択し、背景画像・フォントサイズ・回転・吹き出しスタイルをリアルタイムで変更調整します。</p>
                             </div>
                         </div>
                         <div class="flex gap-4 items-start">
                             <span class="w-7 h-7 rounded-full bg-line-green text-white font-bold text-xs flex items-center justify-center shrink-0">3</span>
                             <div>
-                                <h4 class="text-xs font-bold text-slate-800">コメント欄でフィードバック交流</h4>
-                                <p class="text-xs text-slate-500 mt-0.5">メンション（@まりな など）や「まりな！」ボタンを活用して、チームやプロデューサーと台詞のブラッシュアップを行います。</p>
+                                <h4 class="text-xs font-bold text-slate-800">コメント＆提案タブでリアルタイムディスカッション</h4>
+                                <p class="text-xs text-slate-500 mt-0.5">@メンションや「いいね！」「まりな！」「わるいね！」ボタンを活用して、全員でリアルタイムに意見を出し合いましょう。</p>
                             </div>
                         </div>
                     </div>
@@ -473,12 +494,12 @@
                     </h3>
                     <div class="border-l-2 border-slate-200 pl-4 space-y-4 text-xs">
                         <div>
-                            <span class="font-bold text-line-green">v2.5 (2026年9月 最新版)</span>
-                            <p class="text-slate-600 mt-0.5">9:16リアルタイムキャンバスインタラクション機能の追加、コメント欄における「まりな！」リアクション機能の拡充。</p>
+                            <span class="font-bold text-line-green">v3.0 (最新リアルタイム版)</span>
+                            <p class="text-slate-600 mt-0.5">Firebase Firestoreによるリアルタイムデータベース同期を完全統合。複数ユーザー間のワード追加・コメント提案・リアクションの即時反映に対応。</p>
                         </div>
                         <div>
-                            <span class="font-bold text-slate-700">v2.0</span>
-                            <p class="text-slate-500 mt-0.5">マルチ言語UI切り替え対応およびLocalStorageによるデータ永続化実装。</p>
+                            <span class="font-bold text-slate-700">v2.5</span>
+                            <p class="text-slate-500 mt-0.5">9:16リアルタイムキャンバスインタラクションおよびまりな！リアクション機能の拡充。</p>
                         </div>
                         <div>
                             <span class="font-bold text-slate-700">v1.0</span>
@@ -487,11 +508,11 @@
                     </div>
                 </div>
 
-                <!-- Data Backup / Export -->
+                <!-- Data Export -->
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center justify-between">
                     <div>
-                        <h4 class="text-xs font-bold text-slate-800">データ バックアップ & エクスポート</h4>
-                        <p class="text-xs text-slate-500 mt-0.5">作成した台詞リストをテキストファイルで出力できます</p>
+                        <h4 class="text-xs font-bold text-slate-800">台詞リストのエクスポート</h4>
+                        <p class="text-xs text-slate-500 mt-0.5">現在の共有台詞リストをテキストファイルで保存します</p>
                     </div>
                     <button onclick="exportStampData()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2">
                         <i class="fa-solid fa-download"></i>
@@ -504,116 +525,652 @@
 
     </main>
 
-    <!-- Custom Notification Toast -->
+    <!-- User Name Edit Modal -->
+    <div id="userNameModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden p-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4 border border-slate-200">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-user-pen text-line-green"></i>
+                    <span>表示名の設定</span>
+                </h3>
+                <button onclick="closeUserNameModal()" class="text-slate-400 hover:text-slate-600 text-sm">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">お名前・ハンドルネーム</label>
+                <input type="text" id="modalUserNameInput" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-line-green" maxlength="15" placeholder="例: クリエイターA">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeUserNameModal()" class="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl">キャンセル</button>
+                <button onclick="saveUserNameFromModal()" class="px-4 py-2 text-xs font-bold text-white bg-line-green hover:bg-line-hover rounded-xl shadow">保存する</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
     <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold border border-slate-700">
         <i id="toastIcon" class="fa-solid fa-circle-check text-line-green text-base"></i>
         <span id="toastMessage">通知メッセージ</span>
     </div>
 
-    <!-- ================= JAVASCRIPT LOGIC ================= -->
-    <script>
-        
-        // Language Dictionary
+    <!-- ================= JAVASCRIPT & FIREBASE REALTIME LOGIC ================= -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInAnonymously, 
+            signInWithCustomToken, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            doc, 
+            onSnapshot, 
+            addDoc, 
+            updateDoc, 
+            deleteDoc, 
+            setDoc, 
+            getDocs 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global environment fallbacks
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'line-stamp-word-planner-v3';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : {
+                apiKey: "demo-key",
+                authDomain: "demo.firebaseapp.com",
+                projectId: "demo-project",
+                storageBucket: "demo.appspot.com",
+                messagingSenderId: "123456789",
+                appId: "1:123456789:web:demo"
+            };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Firestore Collections according to RULE 1
+        const stampsCollectionPath = collection(db, 'artifacts', appId, 'public', 'data', 'stamps');
+        const commentsCollectionPath = collection(db, 'artifacts', appId, 'public', 'data', 'comments');
+
+        // Application State
+        let currentUserId = null;
+        let userName = localStorage.getItem('line_user_name') || 'ユーザー_' + Math.floor(1000 + Math.random() * 9000);
+        let stampList = [];
+        let commentsList = [];
+        let selectedStampId = null;
+        let activeBadgeStyle = 'bubble';
+        let currentLang = 'ja';
+
+        // i18n Translations
         const i18n = {
             ja: {
                 tabHome: 'ホーム',
-                tabComments: 'コメント欄',
+                tabComments: 'コメント・提案',
                 tabInfo: '情報',
-                inputTitle: '新しいスタンプ台詞を追加',
+                inputTitle: 'リアルタイムで新しいスタンプ台詞を追加',
                 addBtn: '追加する',
-                presetTagLabel: '定番タグ:',
-                listTitle: '台詞リスト',
-                clearAllBtn: 'すべて消去',
-                previewTitle: '9:16 プレビューキャンバス',
+                listTitle: '共有ワードリスト',
+                previewTitle: '9:16 リアルタイムキャンバス',
                 uploadImageBtn: '画像アップロード',
-                dragTip: '台詞をドラッグ＆スタイル調整可能',
-                commentHeader: 'コミュニティ・コメント欄',
-                postCommentBtn: '送信する',
+                dragTip: 'タップ／ドラッグで位置調整可能',
+                commentHeader: 'コメント & ワードリアルタイム提案',
+                postCommentBtn: 'リアルタイム投稿',
                 langTitle: '言語設定 (Language)',
                 langDesc: 'アプリ表示言語を切り替えます'
             },
             en: {
                 tabHome: 'Home',
-                tabComments: 'Comments',
+                tabComments: 'Comments & Proposals',
                 tabInfo: 'Info',
-                inputTitle: 'Add New Stamp Word',
+                inputTitle: 'Add New Stamp Word in Real-time',
                 addBtn: 'Add Word',
-                presetTagLabel: 'Presets:',
-                listTitle: 'Word List',
-                clearAllBtn: 'Clear All',
-                previewTitle: '9:16 Visual Canvas',
+                listTitle: 'Shared Word List',
+                previewTitle: '9:16 Real-time Canvas',
                 uploadImageBtn: 'Upload Image',
-                dragTip: 'Drag text & customize style',
-                commentHeader: 'Community Comments',
-                postCommentBtn: 'Post Comment',
+                dragTip: 'Tap/Drag to adjust text position',
+                commentHeader: 'Comments & Word Proposals',
+                postCommentBtn: 'Post in Real-time',
                 langTitle: 'Language Settings',
                 langDesc: 'Switch application UI language'
             }
         };
 
-        let currentLang = 'ja';
-
-        // Default Initial Datasets
-        const DEFAULT_STAMPS = [
-            { id: '1', text: 'りょ！👍', category: '返事' },
-            { id: '2', text: 'おつかれさま〜✨', category: '挨拶' },
-            { id: '3', text: '神すぎる！！😭', category: '感情' },
-            { id: '4', text: 'なるほどね🤔', category: '相槌' },
-            { id: '5', text: '感謝感謝です🙏', category: '感謝' },
-            { id: '6', text: '草ｗｗｗ', category: '笑い' },
-            { id: '7', text: '今どこー？👀', category: '質問' },
-            { id: '8', text: '任せて！🔥', category: '気合い' }
-        ];
-
-        const DEFAULT_COMMENTS = [
-            {
-                id: 'c1',
-                author: 'プロデューサー',
-                avatarBg: 'bg-indigo-600',
-                time: '10分前',
-                text: '@まりな 全体的に日常使いしやすい台詞が揃ってきましたね！「りょ！」のフォントを少しポップに調整しましょう。',
-                likes: 5,
-                marinaLikes: 8,
-                dislikes: 0,
-                replies: [
-                    {
-                        id: 'r1',
-                        author: 'まりな',
-                        avatarBg: 'bg-line-green',
-                        time: '5分前',
-                        text: 'ありがとうございます！9:16キャンバスで吹き出しスタイル試してみます🎀'
-                    }
-                ]
-            },
-            {
-                id: 'c2',
-                author: 'デザイナー',
-                avatarBg: 'bg-pink-500',
-                time: '30分前',
-                text: '「おつかれさま〜✨」はイラストの余白と白フチのバランスが最高です！',
-                likes: 3,
-                marinaLikes: 4,
-                dislikes: 0,
-                replies: []
+        // Initialize Firebase Auth & Realtime Subscriptions
+        async function initAuthAndSync() {
+            try {
+                // Rule 3: Auth priority check
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) {
+                console.warn('Firebase Auth fallback:', err);
             }
-        ];
 
-        // State variables
-        let stampList = JSON.parse(localStorage.getItem('line_stamps')) || DEFAULT_STAMPS;
-        let commentsList = JSON.parse(localStorage.getItem('line_comments')) || DEFAULT_COMMENTS;
-        let selectedStampId = stampList.length > 0 ? stampList[0].id : null;
-        let activeBadgeStyle = 'bubble';
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUserId = user.uid;
+                    document.getElementById('currentUserIdText').innerText = currentUserId;
+                    updateSyncBadge(true);
 
+                    // Subscribe to Realtime Updates
+                    subscribeToStamps();
+                    subscribeToComments();
+                } else {
+                    updateSyncBadge(false);
+                }
+            });
+        }
 
-        window.onload = function() {
-            renderStampList();
-            renderComments();
-            updatePreviewOverlay();
-            setupCharCounter();
+        function updateSyncBadge(isOnline) {
+            const statusText = document.getElementById('syncStatusText');
+            const dbBadge = document.getElementById('dbStatusBadge');
+
+            if (isOnline) {
+                if (statusText) statusText.innerText = '同期中 (リアルタイム)';
+                if (dbBadge) dbBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> オンライン (Firestore)`;
+            } else {
+                if (statusText) statusText.innerText = 'オフライン';
+                if (dbBadge) dbBadge.innerHTML = `<i class="fa-solid fa-circle-xmark text-red-500"></i> 未接続`;
+            }
+        }
+
+        // 1. Stamp List Real-time Listener (Rule 2: simple collection query, sort in JS)
+        function subscribeToStamps() {
+            onSnapshot(stampsCollectionPath, (snapshot) => {
+                const items = [];
+                snapshot.forEach(docSnap => {
+                    items.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                // Sort by createdAt ascending in JS memory
+                items.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+                stampList = items;
+
+                // Auto-select first item if current selected is invalid
+                if (!selectedStampId && stampList.length > 0) {
+                    selectedStampId = stampList[0].id;
+                } else if (selectedStampId && !stampList.some(s => s.id === selectedStampId)) {
+                    selectedStampId = stampList.length > 0 ? stampList[0].id : null;
+                }
+
+                renderStampList();
+                updatePreviewOverlay();
+            }, (error) => {
+                console.error("Stamps listener error:", error);
+                showToast("ワード同期中にエラーが発生しました", "error");
+            });
+        }
+
+        // 2. Comments Real-time Listener (Rule 2: simple collection query, sort in JS)
+        function subscribeToComments() {
+            onSnapshot(commentsCollectionPath, (snapshot) => {
+                const items = [];
+                snapshot.forEach(docSnap => {
+                    items.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                // Sort by createdAt descending in JS memory
+                items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                commentsList = items;
+
+                renderComments();
+            }, (error) => {
+                console.error("Comments listener error:", error);
+                showToast("コメント同期中にエラーが発生しました", "error");
+            });
+        }
+
+        // Add new Stamp to Firestore
+        window.handleAddStamp = async function(event) {
+            event.preventDefault();
+            const input = document.getElementById('stampInput');
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            if (stampList.length >= 40) {
+                showToast('スタンプは最大40個まで登録可能です', 'error');
+                return;
+            }
+
+            try {
+                const docRef = await addDoc(stampsCollectionPath, {
+                    text: text,
+                    createdAt: Date.now(),
+                    creatorId: currentUserId,
+                    creatorName: userName
+                });
+
+                selectedStampId = docRef.id;
+                input.value = '';
+                document.getElementById('charCount').innerText = '0/20';
+                showToast('新しい台詞を追加しました！');
+            } catch (err) {
+                console.error("Error adding stamp:", err);
+                showToast("台詞の追加に失敗しました", "error");
+            }
         };
 
-        // Tab Switching Logic
-        function switchTab(tabName) {
+        // Delete single stamp from Firestore
+        window.deleteStamp = async function(id, e) {
+            e.stopPropagation();
+            try {
+                await deleteDoc(doc(stampsCollectionPath, id));
+                showToast('台詞を削除しました', 'info');
+            } catch (err) {
+                console.error("Error deleting stamp:", err);
+                showToast("削除に失敗しました", "error");
+            }
+        };
+
+        // Select Stamp
+        window.selectStamp = function(id) {
+            selectedStampId = id;
+            renderStampList();
+            updatePreviewOverlay();
+        };
+
+        // Render Compact Word List (Empty State supported)
+        function renderStampList() {
+            const container = document.getElementById('stampListContainer');
+            const counter = document.getElementById('stampCounter');
+            const totalBadge = document.getElementById('stampTotalBadge');
+            const progressBar = document.getElementById('progressBar');
+
+            if (counter) counter.innerText = stampList.length;
+            if (totalBadge) totalBadge.innerText = stampList.length;
+            if (progressBar) progressBar.style.width = `${Math.min((stampList.length / 40) * 100, 100)}%`;
+
+            if (!container) return;
+
+            // Clean Empty State
+            if (stampList.length === 0) {
+                container.innerHTML = `
+                    <div class="p-10 text-center text-slate-400 space-y-2">
+                        <i class="fa-solid fa-comment-slash text-4xl text-slate-300"></i>
+                        <p class="text-xs font-bold text-slate-600">共有されている台詞案がありません</p>
+                        <p class="text-[11px] text-slate-400">上のフォームから最初のスタンプフレーズを追加してください！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = stampList.map((stamp, idx) => {
+                const isSelected = stamp.id === selectedStampId;
+                const slotNum = String(idx + 1).padStart(2, '0');
+
+                return `
+                    <div onclick="selectStamp('${stamp.id}')" 
+                         class="group p-3 flex items-center justify-between gap-3 cursor-pointer transition-all hover:bg-slate-50 ${isSelected ? 'bg-line-light/70 border-l-4 border-line-green' : ''}">
+                        
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <!-- Slot Index Badge -->
+                            <span class="w-7 h-7 rounded-lg text-xs font-extrabold flex items-center justify-center shrink-0 ${isSelected ? 'bg-line-green text-white shadow-sm' : 'bg-slate-100 text-slate-500'}">
+                                ${slotNum}
+                            </span>
+                            <!-- Stamp Text -->
+                            <span class="text-sm font-extrabold text-slate-800 truncate ${isSelected ? 'text-line-green' : ''}">
+                                ${escapeHtml(stamp.text)}
+                            </span>
+                        </div>
+
+                        <!-- Action Control Buttons -->
+                        <div class="flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="copyStampText('${escapeHtml(stamp.text)}', event)" class="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-600 text-xs flex items-center justify-center" title="テキストをコピー">
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                            <button onclick="deleteStamp('${stamp.id}', event)" class="w-7 h-7 rounded-lg hover:bg-red-100 text-red-500 text-xs flex items-center justify-center" title="削除">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Post new comment to Firestore
+        window.handlePostComment = async function(e) {
+            e.preventDefault();
+            const textarea = document.getElementById('commentInputText');
+            const text = textarea.value.trim();
+
+            if (!text) return;
+
+            try {
+                await addDoc(commentsCollectionPath, {
+                    text: text,
+                    authorName: userName,
+                    authorId: currentUserId || 'anonymous',
+                    createdAt: Date.now(),
+                    likes: 0,
+                    marinaLikes: 0,
+                    dislikes: 0,
+                    replies: []
+                });
+
+                textarea.value = '';
+                showToast('リアルタイム投稿完了！');
+            } catch (err) {
+                console.error("Error posting comment:", err);
+                showToast("コメント投稿に失敗しました", "error");
+            }
+        };
+
+        // Realtime Reactions (Likes, Marina!, Dislikes)
+        window.handleReaction = async function(commentId, type) {
+            const comment = commentsList.find(c => c.id === commentId);
+            if (!comment) return;
+
+            const commentDocRef = doc(commentsCollectionPath, commentId);
+            const updateData = {};
+
+            if (type === 'like') updateData.likes = (comment.likes || 0) + 1;
+            if (type === 'marina') updateData.marinaLikes = (comment.marinaLikes || 0) + 1;
+            if (type === 'dislike') updateData.dislikes = (comment.dislikes || 0) + 1;
+
+            try {
+                await updateDoc(commentDocRef, updateData);
+            } catch (err) {
+                console.error("Error updating reaction:", err);
+            }
+        };
+
+        // Nested Replies
+        window.handlePostReply = async function(commentId, e) {
+            e.preventDefault();
+            const input = document.getElementById(`replyInput-${commentId}`);
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            const comment = commentsList.find(c => c.id === commentId);
+            if (!comment) return;
+
+            const commentDocRef = doc(commentsCollectionPath, commentId);
+            const updatedReplies = comment.replies || [];
+            updatedReplies.push({
+                id: 'r_' + Date.now(),
+                authorName: userName,
+                authorId: currentUserId || 'anonymous',
+                text: text,
+                createdAt: Date.now()
+            });
+
+            try {
+                await updateDoc(commentDocRef, { replies: updatedReplies });
+                showToast('返信を送信しました');
+            } catch (err) {
+                console.error("Error posting reply:", err);
+            }
+        };
+
+        // Delete Comment from Firestore
+        window.deleteComment = async function(commentId) {
+            try {
+                await deleteDoc(doc(commentsCollectionPath, commentId));
+                showToast('コメントを削除しました', 'info');
+            } catch (err) {
+                console.error("Error deleting comment:", err);
+            }
+        };
+
+        // Render Comment Threads
+        function renderComments() {
+            const container = document.getElementById('commentsListContainer');
+            const badge = document.getElementById('commentBadge');
+
+            if (badge) badge.innerText = commentsList.length;
+
+            if (!container) return;
+
+            // Clean Empty State for Comments
+            if (commentsList.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white p-10 rounded-2xl border border-slate-200 text-center text-slate-400 space-y-2">
+                        <i class="fa-solid fa-comments text-4xl text-slate-300"></i>
+                        <p class="text-xs font-bold text-slate-600">まだコメントやワード提案がありません</p>
+                        <p class="text-[11px] text-slate-400">最初のコメントやおすすめアイデアを投稿して共有しましょう！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = commentsList.map(c => {
+                const timeAgoStr = formatTimeAgo(c.createdAt);
+                const isOwn = c.authorId === currentUserId;
+
+                return `
+                    <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200 space-y-3">
+                        <!-- Comment Author & Header -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full ${isOwn ? 'bg-line-green' : 'bg-slate-700'} text-white font-bold text-xs flex items-center justify-center shadow-sm">
+                                    ${escapeHtml((c.authorName || 'User').substring(0, 2))}
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                                        <span>${escapeHtml(c.authorName || '匿名ユーザー')}</span>
+                                        ${isOwn ? '<span class="bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.2 rounded font-bold">あなた</span>' : ''}
+                                    </h4>
+                                    <span class="text-[10px] text-slate-400">${timeAgoStr}</span>
+                                </div>
+                            </div>
+                            <button onclick="deleteComment('${c.id}')" class="text-slate-400 hover:text-red-500 text-xs px-2 py-1 rounded-md hover:bg-red-50 transition-colors" title="削除">
+                                <i class="fa-solid fa-trash-can"></i> 削除
+                            </button>
+                        </div>
+
+                        <!-- Comment Text Body -->
+                        <p class="text-xs sm:text-sm text-slate-700 leading-relaxed pl-12">
+                            ${highlightMentions(escapeHtml(c.text))}
+                        </p>
+
+                        <!-- Interactive Reaction Action Bar -->
+                        <div class="flex items-center gap-2 pl-12 pt-1 flex-wrap">
+                            <!-- Like Button -->
+                            <button onclick="handleReaction('${c.id}', 'like')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 text-xs font-semibold transition-colors border border-slate-200/80">
+                                <i class="fa-regular fa-thumbs-up"></i>
+                                <span>いいね</span>
+                                <span class="bg-slate-200 text-slate-700 text-[10px] px-1.5 py-0.2 rounded-full font-bold">${c.likes || 0}</span>
+                            </button>
+
+                            <!-- Custom Unique "まりな！" Button -->
+                            <button onclick="handleReaction('${c.id}', 'marina')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-600 text-xs font-bold transition-all border border-pink-200 shadow-sm active:scale-95">
+                                <i class="fa-solid fa-ribbon animate-bounce-subtle"></i>
+                                <span>まりな！</span>
+                                <span class="bg-pink-200 text-pink-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold animate-pop">${c.marinaLikes || 0}</span>
+                            </button>
+
+                            <!-- Dislike Button -->
+                            <button onclick="handleReaction('${c.id}', 'dislike')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 text-xs font-semibold transition-colors">
+                                <i class="fa-regular fa-thumbs-down"></i>
+                                <span>わるいね (${c.dislikes || 0})</span>
+                            </button>
+
+                            <!-- Reply Toggle Button -->
+                            <button onclick="toggleReplyBox('${c.id}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-line-light text-slate-600 hover:text-line-green text-xs font-semibold transition-colors ml-auto">
+                                <i class="fa-solid fa-reply"></i>
+                                <span>返信</span>
+                                <span class="text-[10px] font-bold">(${c.replies ? c.replies.length : 0})</span>
+                            </button>
+                        </div>
+
+                        <!-- Nested Replies Container -->
+                        ${c.replies && c.replies.length > 0 ? `
+                            <div class="ml-12 pl-3 border-l-2 border-slate-200 space-y-2 mt-2 pt-2">
+                                ${c.replies.map(r => `
+                                    <div class="bg-slate-50 p-2.5 rounded-xl text-xs space-y-1">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-bold text-slate-800">${escapeHtml(r.authorName || 'ユーザー')}</span>
+                                            <span class="text-[10px] text-slate-400">${formatTimeAgo(r.createdAt)}</span>
+                                        </div>
+                                        <p class="text-slate-600">${escapeHtml(r.text)}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        <!-- Reply Input Form Box (Hidden by default) -->
+                        <div id="replyBox-${c.id}" class="hidden ml-12 pt-2">
+                            <form onsubmit="handlePostReply('${c.id}', event)" class="flex gap-2">
+                                <input type="text" id="replyInput-${c.id}" placeholder="返信を入力..." class="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-1 focus:ring-line-green" required>
+                                <button type="submit" class="bg-line-green text-white px-3 py-1.5 text-xs font-bold rounded-xl shadow">送信</button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update 9:16 Visual Canvas Overlay
+        function updatePreviewOverlay() {
+            const selected = stampList.find(s => s.id === selectedStampId);
+            const overlayText = document.getElementById('stampOverlayText');
+            const slotNumber = document.getElementById('currentSlotNumber');
+
+            if (selected) {
+                const idx = stampList.findIndex(s => s.id === selectedStampId) + 1;
+                if (overlayText) overlayText.innerText = selected.text;
+                if (slotNumber) slotNumber.innerText = `No. ${String(idx).padStart(2, '0')}`;
+            } else {
+                if (overlayText) overlayText.innerText = '（台詞を選択してください）';
+                if (slotNumber) slotNumber.innerText = 'No. --';
+            }
+
+            updateStampStyle();
+        }
+
+        // Styling Controls (Sliders, Styles)
+        window.updateStampStyle = function() {
+            const badge = document.getElementById('stampOverlayBadge');
+            const sizeSlider = document.getElementById('textSizeSlider');
+            const rotateSlider = document.getElementById('textRotateSlider');
+
+            if (!badge || !sizeSlider || !rotateSlider) return;
+
+            const size = sizeSlider.value;
+            const rotate = rotateSlider.value;
+
+            badge.style.fontSize = `${size}px`;
+            badge.style.transform = `rotate(${rotate}deg)`;
+
+            badge.className = 'px-4 py-2.5 rounded-2xl shadow-2xl transition-all duration-150 transform ';
+            
+            if (activeBadgeStyle === 'bubble') {
+                badge.className += 'bg-white text-slate-900 font-black border-2 border-slate-900 bubble-tail-bottom';
+            } else if (activeBadgeStyle === 'badge') {
+                badge.className += 'bg-line-green text-white font-black border-2 border-white ring-2 ring-line-green';
+            } else if (activeBadgeStyle === 'minimal') {
+                badge.className += 'bg-transparent text-white font-black text-stroke-black drop-shadow-lg';
+            }
+        };
+
+        window.setBadgeStyle = function(style) {
+            activeBadgeStyle = style;
+            updateStampStyle();
+        };
+
+        // Canvas Background Image Handlers
+        window.handleImageUpload = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                document.getElementById('bgCanvasImage').src = evt.target.result;
+                showToast('背景画像をアップロードしました！');
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.setBgPreset = function(url) {
+            document.getElementById('bgCanvasImage').src = url;
+            showToast('背景プリセットを適用しました');
+        };
+
+        // Drag overlay logic for canvas
+        function setupCanvasOverlayDrag() {
+            const overlay = document.getElementById('interactiveStampOverlay');
+            const viewport = document.getElementById('canvasViewport');
+
+            if (!overlay || !viewport) return;
+
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+
+            function onStart(e) {
+                isDragging = true;
+                const touch = e.touches ? e.touches[0] : e;
+                startX = touch.clientX;
+                startY = touch.clientY;
+                initialLeft = overlay.offsetLeft;
+                initialTop = overlay.offsetTop;
+            }
+
+            function onMove(e) {
+                if (!isDragging) return;
+                const touch = e.touches ? e.touches[0] : e;
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+
+                const newLeft = initialLeft + deltaX;
+                const newTop = initialTop + deltaY;
+
+                overlay.style.left = `${newLeft}px`;
+                overlay.style.top = `${newTop}px`;
+                overlay.style.right = 'auto';
+            }
+
+            function onEnd() {
+                isDragging = false;
+            }
+
+            overlay.addEventListener('mousedown', onStart);
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onEnd);
+
+            overlay.addEventListener('touchstart', onStart, { passive: true });
+            window.addEventListener('touchmove', onMove, { passive: true });
+            window.addEventListener('touchend', onEnd);
+        }
+
+        // User Name Modal
+        window.openUserNameModal = function() {
+            document.getElementById('modalUserNameInput').value = userName;
+            document.getElementById('userNameModal').classList.remove('hidden');
+        };
+
+        window.closeUserNameModal = function() {
+            document.getElementById('userNameModal').classList.add('hidden');
+        };
+
+        window.saveUserNameFromModal = function() {
+            const val = document.getElementById('modalUserNameInput').value.trim();
+            if (val) {
+                userName = val;
+                localStorage.setItem('line_user_name', userName);
+                updateUserNameDisplays();
+                showToast(`表示名を「${userName}」に変更しました`);
+            }
+            closeUserNameModal();
+        };
+
+        function updateUserNameDisplays() {
+            const headerName = document.getElementById('headerUserName');
+            const commentName = document.getElementById('commentUserNameDisplay');
+            if (headerName) headerName.innerText = userName;
+            if (commentName) commentName.innerText = userName;
+        }
+
+        // Tab Switching
+        window.switchTab = function(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-tab').forEach(el => {
                 el.classList.remove('bg-white', 'text-line-green', 'shadow-sm');
@@ -628,82 +1185,24 @@
                 activeBtn.classList.add('bg-white', 'text-line-green', 'shadow-sm');
                 activeBtn.classList.remove('text-slate-600');
             }
-        }
+        };
 
-
-        // Character count listener for input
-        function setupCharCounter() {
-            const input = document.getElementById('stampInput');
-            const counter = document.getElementById('charCount');
-            if (input && counter) {
-                input.addEventListener('input', (e) => {
-                    counter.innerText = `${e.target.value.length}/20`;
-                });
+        // Utility Helpers
+        window.insertMention = function(mention) {
+            const textarea = document.getElementById('commentInputText');
+            if (textarea) {
+                textarea.value += (textarea.value ? ' ' : '') + mention + ' ';
+                textarea.focus();
             }
-        }
+        };
 
-        // Add Stamp Phrase
-        function handleAddStamp(event) {
-            event.preventDefault();
-            const input = document.getElementById('stampInput');
-            const text = input.value.trim();
+        window.toggleReplyBox = function(commentId) {
+            const replyBox = document.getElementById(`replyBox-${commentId}`);
+            if (replyBox) replyBox.classList.toggle('hidden');
+        };
 
-            if (!text) return;
-
-            if (stampList.length >= 40) {
-                showToast('スタンプは最大40個まで登録可能です', 'error');
-                return;
-            }
-
-            const newStamp = {
-                id: Date.now().toString(),
-                text: text,
-                category: 'カスタム'
-            };
-
-            stampList.push(newStamp);
-            saveStamps();
-            renderStampList();
-
-            // Select newly added stamp for preview
-            selectStamp(newStamp.id);
-
-            input.value = '';
-            document.getElementById('charCount').innerText = '0/20';
-            showToast('新しい台詞を追加しました！');
-        }
-
-        // Quick template tag insert
-        function insertTemplate(str) {
-            const input = document.getElementById('stampInput');
-            input.value = str;
-            document.getElementById('charCount').innerText = `${str.length}/20`;
-            input.focus();
-        }
-
-        // Select Stamp for preview
-        function selectStamp(id) {
-            selectedStampId = id;
-            renderStampList();
-            updatePreviewOverlay();
-        }
-
-        // Delete single stamp
-        function deleteStamp(id, e) {
-            e.stopPropagation();
-            stampList = stampList.filter(s => s.id !== id);
-            if (selectedStampId === id) {
-                selectedStampId = stampList.length > 0 ? stampList[0].id : null;
-            }
-            saveStamps();
-            renderStampList();
-            updatePreviewOverlay();
-            showToast('台詞を削除しました', 'info');
-        }
-
-        // Copy text to clipboard using safe document.execCommand fallback
-        function copyStampText(text, e) {
-            e.stopPropagation();
+        window.copyStampText = function(text, e) {
+            if (e) e.stopPropagation();
             const textarea = document.createElement('textarea');
             textarea.value = text;
             document.body.appendChild(textarea);
@@ -711,390 +1210,9 @@
             document.execCommand('copy');
             document.body.removeChild(textarea);
             showToast(`「${text}」をコピーしました！`);
-        }
+        };
 
-        // Clear all stamps
-        function clearAllStamps() {
-            if (stampList.length === 0) return;
-            stampList = [];
-            selectedStampId = null;
-            saveStamps();
-            renderStampList();
-            updatePreviewOverlay();
-            showToast('すべての台詞を消去しました', 'info');
-        }
-
-        // Move stamp order up/down
-        function moveStamp(index, direction, e) {
-            e.stopPropagation();
-            if (direction === 'up' && index > 0) {
-                const temp = stampList[index];
-                stampList[index] = stampList[index - 1];
-                stampList[index - 1] = temp;
-            } else if (direction === 'down' && index < stampList.length - 1) {
-                const temp = stampList[index];
-                stampList[index] = stampList[index + 1];
-                stampList[index + 1] = temp;
-            }
-            saveStamps();
-            renderStampList();
-        }
-
-        // Render Compact Stamp List
-        function renderStampList() {
-            const container = document.getElementById('stampListContainer');
-            const counter = document.getElementById('stampCounter');
-            const totalBadge = document.getElementById('stampTotalBadge');
-            const progressBar = document.getElementById('progressBar');
-
-            counter.innerText = stampList.length;
-            totalBadge.innerText = stampList.length;
-            progressBar.style.width = `${Math.min((stampList.length / 40) * 100, 100)}%`;
-
-            if (stampList.length === 0) {
-                container.innerHTML = `
-                    <div class="p-8 text-center text-slate-400">
-                        <i class="fa-solid fa-comment-slash text-3xl mb-2"></i>
-                        <p class="text-xs">台詞がまだありません。上の入力欄から追加してください。</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = stampList.map((stamp, idx) => {
-                const isSelected = stamp.id === selectedStampId;
-                const slotNum = String(idx + 1).padStart(2, '0');
-
-                return `
-                    <div onclick="selectStamp('${stamp.id}')" 
-                         class="group p-3 flex items-center justify-between gap-3 cursor-pointer transition-all hover:bg-slate-50 ${isSelected ? 'bg-line-light/60 border-l-4 border-line-green' : ''}">
-                        
-                        <div class="flex items-center gap-3 flex-1 min-w-0">
-                            <!-- Slot Index Badge -->
-                            <span class="w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${isSelected ? 'bg-line-green text-white shadow-sm' : 'bg-slate-100 text-slate-500'}">
-                                ${slotNum}
-                            </span>
-                            <!-- Stamp Text -->
-                            <span class="text-sm font-extrabold text-slate-800 truncate ${isSelected ? 'text-line-green' : ''}">
-                                ${escapeHtml(stamp.text)}
-                            </span>
-                        </div>
-
-                        <!-- Action Control Buttons -->
-                        <div class="flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="moveStamp(${idx}, 'up', event)" class="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-500 text-xs flex items-center justify-center" title="上へ移動">
-                                <i class="fa-solid fa-chevron-up"></i>
-                            </button>
-                            <button onclick="moveStamp(${idx}, 'down', event)" class="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-500 text-xs flex items-center justify-center" title="下へ移動">
-                                <i class="fa-solid fa-chevron-down"></i>
-                            </button>
-                            <button onclick="copyStampText('${escapeHtml(stamp.text)}', event)" class="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-600 text-xs flex items-center justify-center" title="テキストをコピー">
-                                <i class="fa-solid fa-copy"></i>
-                            </button>
-                            <button onclick="deleteStamp('${stamp.id}', event)" class="w-7 h-7 rounded-lg hover:bg-red-100 text-red-500 text-xs flex items-center justify-center" title="削除">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-
-        // Update 9:16 Canvas Overlay Text & Style
-        function updatePreviewOverlay() {
-            const selected = stampList.find(s => s.id === selectedStampId);
-            const overlayText = document.getElementById('stampOverlayText');
-            const slotNumber = document.getElementById('currentSlotNumber');
-
-            if (selected) {
-                const idx = stampList.findIndex(s => s.id === selectedStampId) + 1;
-                overlayText.innerText = selected.text;
-                slotNumber.innerText = `No. ${String(idx).padStart(2, '0')}`;
-            } else {
-                overlayText.innerText = '（台詞を選択してください）';
-                slotNumber.innerText = 'No. --';
-            }
-
-            updateStampStyle();
-        }
-
-        // Apply sliders & badge styles to overlay
-        function updateStampStyle() {
-            const badge = document.getElementById('stampOverlayBadge');
-            const sizeSlider = document.getElementById('textSizeSlider');
-            const rotateSlider = document.getElementById('textRotateSlider');
-
-            if (!badge || !sizeSlider || !rotateSlider) return;
-
-            const size = sizeSlider.value;
-            const rotate = rotateSlider.value;
-
-            badge.style.fontSize = `${size}px`;
-            badge.style.transform = `rotate(${rotate}deg)`;
-
-            // Badge styling classes
-            badge.className = 'px-4 py-2.5 rounded-2xl shadow-2xl transition-all duration-150 transform ';
-            
-            if (activeBadgeStyle === 'bubble') {
-                badge.className += 'bg-white text-slate-900 font-black border-2 border-slate-900 bubble-tail-bottom';
-            } else if (activeBadgeStyle === 'badge') {
-                badge.className += 'bg-line-green text-white font-black border-2 border-white ring-2 ring-line-green';
-            } else if (activeBadgeStyle === 'minimal') {
-                badge.className += 'bg-transparent text-white font-black text-stroke-black drop-shadow-lg';
-            }
-        }
-
-        function setBadgeStyle(style) {
-            activeBadgeStyle = style;
-            updateStampStyle();
-        }
-
-        // Custom image upload for 9:16 canvas
-        function handleImageUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                document.getElementById('bgCanvasImage').src = evt.target.result;
-                showToast('背景画像をアップロードしました！');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function setBgPreset(url) {
-            document.getElementById('bgCanvasImage').src = url;
-            showToast('背景プリセットを適用しました');
-        }
-
-
-        // Post new comment
-        function handlePostComment(e) {
-            e.preventDefault();
-            const textarea = document.getElementById('commentInputText');
-            const text = textarea.value.trim();
-
-            if (!text) return;
-
-            const newComment = {
-                id: 'c_' + Date.now(),
-                author: 'あなた (投稿者)',
-                avatarBg: 'bg-line-green',
-                time: 'たった今',
-                text: text,
-                likes: 0,
-                marinaLikes: 0,
-                dislikes: 0,
-                replies: []
-            };
-
-            commentsList.unshift(newComment);
-            saveComments();
-            renderComments();
-
-            textarea.value = '';
-            showToast('コメントを投稿しました！');
-        }
-
-        // Insert mention tag into comment box
-        function insertMention(mention) {
-            const textarea = document.getElementById('commentInputText');
-            textarea.value += (textarea.value ? ' ' : '') + mention + ' ';
-            textarea.focus();
-        }
-
-        // Reactions logic (Like, Marina, Dislike)
-        function handleReaction(commentId, type) {
-            const comment = commentsList.find(c => c.id === commentId);
-            if (!comment) return;
-
-            if (type === 'like') comment.likes += 1;
-            if (type === 'marina') comment.marinaLikes += 1;
-            if (type === 'dislike') comment.dislikes += 1;
-
-            saveComments();
-            renderComments();
-        }
-
-        // Toggle reply input box
-        function toggleReplyBox(commentId) {
-            const replyBox = document.getElementById(`replyBox-${commentId}`);
-            if (replyBox) {
-                replyBox.classList.toggle('hidden');
-            }
-        }
-
-        // Post nested reply
-        function handlePostReply(commentId, e) {
-            e.preventDefault();
-            const input = document.getElementById(`replyInput-${commentId}`);
-            const text = input.value.trim();
-
-            if (!text) return;
-
-            const comment = commentsList.find(c => c.id === commentId);
-            if (comment) {
-                comment.replies.push({
-                    id: 'r_' + Date.now(),
-                    author: 'あなた',
-                    avatarBg: 'bg-slate-800',
-                    time: 'たった今',
-                    text: text
-                });
-                saveComments();
-                renderComments();
-                showToast('返信を送信しました');
-            }
-        }
-
-        // Delete comment
-        function deleteComment(commentId) {
-            commentsList = commentsList.filter(c => c.id !== commentId);
-            saveComments();
-            renderComments();
-            showToast('コメントを削除しました', 'info');
-        }
-
-        // Render Comments Thread
-        function renderComments() {
-            const container = document.getElementById('commentsListContainer');
-            const badge = document.getElementById('commentBadge');
-
-            if (badge) badge.innerText = commentsList.length;
-
-            if (commentsList.length === 0) {
-                container.innerHTML = `
-                    <div class="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-400">
-                        <i class="fa-solid fa-comments text-3xl mb-2"></i>
-                        <p class="text-xs">コメントがまだありません。最初のコメントを投稿しましょう！</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = commentsList.map(c => `
-                <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200 space-y-3">
-                    <!-- Comment Author & Header -->
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-full ${c.avatarBg} text-white font-bold text-xs flex items-center justify-center shadow-sm">
-                                ${escapeHtml(c.author.substring(0, 2))}
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-bold text-slate-800 flex items-center gap-2">
-                                    <span>${escapeHtml(c.author)}</span>
-                                    ${c.author === 'まりな' ? '<span class="bg-pink-100 text-pink-600 text-[10px] px-1.5 py-0.2 rounded font-bold">クリエイター</span>' : ''}
-                                </h4>
-                                <span class="text-[10px] text-slate-400">${c.time}</span>
-                            </div>
-                        </div>
-                        <button onclick="deleteComment('${c.id}')" class="text-slate-400 hover:text-red-500 text-xs px-2 py-1 rounded-md hover:bg-red-50 transition-colors" title="コメント削除">
-                            <i class="fa-solid fa-trash-can"></i> 削除
-                        </button>
-                    </div>
-
-                    <!-- Comment Text Body -->
-                    <p class="text-xs sm:text-sm text-slate-700 leading-relaxed pl-12">
-                        ${highlightMentions(escapeHtml(c.text))}
-                    </p>
-
-                    <!-- Interactive Reaction Action Bar -->
-                    <div class="flex items-center gap-2 pl-12 pt-1 flex-wrap">
-                        <!-- Like Button -->
-                        <button onclick="handleReaction('${c.id}', 'like')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 text-xs font-semibold transition-colors border border-slate-200/80">
-                            <i class="fa-regular fa-thumbs-up"></i>
-                            <span>いいね</span>
-                            <span class="bg-slate-200 group-hover:bg-blue-100 text-slate-700 text-[10px] px-1.5 py-0.2 rounded-full font-bold">${c.likes}</span>
-                        </button>
-
-                        <!-- Custom Unique "まりな！" Button -->
-                        <button onclick="handleReaction('${c.id}', 'marina')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-600 text-xs font-bold transition-all border border-pink-200 shadow-sm active:scale-95">
-                            <i class="fa-solid fa-ribbon animate-bounce-subtle"></i>
-                            <span>まりな！</span>
-                            <span class="bg-pink-200 text-pink-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold animate-pop">${c.marinaLikes}</span>
-                        </button>
-
-                        <!-- Dislike Button -->
-                        <button onclick="handleReaction('${c.id}', 'dislike')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-400 text-xs font-semibold transition-colors">
-                            <i class="fa-regular fa-thumbs-down"></i>
-                            <span>${c.dislikes > 0 ? c.dislikes : ''}</span>
-                        </button>
-
-                        <!-- Reply Toggle Button -->
-                        <button onclick="toggleReplyBox('${c.id}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-line-light text-slate-600 hover:text-line-green text-xs font-semibold transition-colors ml-auto">
-                            <i class="fa-solid fa-reply"></i>
-                            <span>返信</span>
-                            <span class="text-[10px] font-bold">(${c.replies ? c.replies.length : 0})</span>
-                        </button>
-                    </div>
-
-                    <!-- Nested Replies Container -->
-                    ${c.replies && c.replies.length > 0 ? `
-                        <div class="ml-12 pl-3 border-l-2 border-slate-200 space-y-2 mt-2 pt-2">
-                            ${c.replies.map(r => `
-                                <div class="bg-slate-50 p-2.5 rounded-xl text-xs space-y-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-bold text-slate-800">${escapeHtml(r.author)}</span>
-                                        <span class="text-[10px] text-slate-400">${r.time}</span>
-                                    </div>
-                                    <p class="text-slate-600">${escapeHtml(r.text)}</p>
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-
-                    <!-- Reply Input Form Box (Hidden by default) -->
-                    <div id="replyBox-${c.id}" class="hidden ml-12 pt-2">
-                        <form onsubmit="handlePostReply('${c.id}', event)" class="flex gap-2">
-                            <input type="text" id="replyInput-${c.id}" placeholder="返信を入力..." class="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-1 focus:ring-line-green" required>
-                            <button type="submit" class="bg-line-green text-white px-3 py-1.5 text-xs font-bold rounded-xl shadow">送信</button>
-                        </form>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Highlight @mentions in text
-        function highlightMentions(str) {
-            return str.replace(/(@[^\s]+)/g, '<span class="bg-line-light text-line-green font-bold px-1 rounded">$1</span>');
-        }
-
-
-        // Language Switcher
-        function setLanguage(lang) {
-            currentLang = lang;
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (i18n[lang] && i18n[lang][key]) {
-                    el.innerText = i18n[lang][key];
-                }
-            });
-
-            // Toggle language button active styling
-            const btnJa = document.getElementById('langBtn-ja');
-            const btnEn = document.getElementById('langBtn-en');
-            if (lang === 'ja') {
-                btnJa.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-800 shadow-sm transition-all';
-                btnEn.className = 'px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all';
-            } else {
-                btnEn.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-800 shadow-sm transition-all';
-                btnJa.className = 'px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all';
-            }
-
-            showToast(`Language changed to ${lang === 'ja' ? '日本語' : 'English'}`);
-        }
-
-        // Save Data to LocalStorage
-        function saveStamps() {
-            localStorage.setItem('line_stamps', JSON.stringify(stampList));
-        }
-        function saveComments() {
-            localStorage.setItem('line_comments', JSON.stringify(commentsList));
-        }
-
-        // Export Stamp Data as TXT
-        function exportStampData() {
+        window.exportStampData = function() {
             if (stampList.length === 0) {
                 showToast('エクスポートする台詞がありません', 'error');
                 return;
@@ -1106,9 +1224,30 @@
             a.download = `LINE_Stamp_Words_${new Date().toISOString().slice(0, 10)}.txt`;
             a.click();
             showToast('テキストファイルを保存しました！');
-        }
+        };
 
-        // Notification Toast helper
+        window.setLanguage = function(lang) {
+            currentLang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang] && i18n[lang][key]) {
+                    el.innerText = i18n[lang][key];
+                }
+            });
+
+            const btnJa = document.getElementById('langBtn-ja');
+            const btnEn = document.getElementById('langBtn-en');
+            if (lang === 'ja') {
+                btnJa.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-800 shadow-sm transition-all';
+                btnEn.className = 'px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all';
+            } else {
+                btnEn.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-800 shadow-sm transition-all';
+                btnJa.className = 'px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all';
+            }
+
+            showToast(`Language changed to ${lang === 'ja' ? '日本語' : 'English'}`);
+        };
+
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toastNotification');
             const toastMsg = document.getElementById('toastMessage');
@@ -1135,7 +1274,19 @@
             }, 2500);
         }
 
-        // HTML Escape Helper
+        function highlightMentions(str) {
+            return str.replace(/(@[^\s]+)/g, '<span class="bg-pink-100 text-pink-600 font-bold px-1.5 py-0.5 rounded">$1</span>');
+        }
+
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return 'たった今';
+            const diffSec = Math.floor((Date.now() - timestamp) / 1000);
+            if (diffSec < 60) return 'たった今';
+            if (diffSec < 3600) return `${Math.floor(diffSec / 60)}分前`;
+            if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}時間前`;
+            return `${Math.floor(diffSec / 86400)}日前`;
+        }
+
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/&/g, "&amp;")
@@ -1144,6 +1295,23 @@
                       .replace(/"/g, "&quot;")
                       .replace(/'/g, "&#039;");
         }
+
+        // Window Load Event Handler
+        window.onload = function() {
+            updateUserNameDisplays();
+            setupCanvasOverlayDrag();
+
+            const input = document.getElementById('stampInput');
+            const counter = document.getElementById('charCount');
+            if (input && counter) {
+                input.addEventListener('input', (e) => {
+                    counter.innerText = `${e.target.value.length}/20`;
+                });
+            }
+
+            // Start Firebase Authentication & Subscription Sync
+            initAuthAndSync();
+        };
     </script>
 </body>
 </html>
